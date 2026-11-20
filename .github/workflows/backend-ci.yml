@@ -1,0 +1,71 @@
+name: Backend CI
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase
+        run: supabase start -x realtime,storage-api,imgproxy,inbucket,postgrest-exporter,pgadmin-schema-diff,pgadmin-schema-diff,edge-runtime
+
+      - name: Apply Migrations
+        run: supabase db reset
+
+      - name: Run pgTAP Tests
+        run: supabase test db
+
+      - name: Lint SQL Migrations
+        run: |
+          # Basic SQL linting: check for common issues
+          echo "Checking migrations for common issues..."
+          ERRORS=0
+
+          for f in supabase/migrations/*.sql; do
+            # Check: every CREATE TABLE should have ENABLE ROW LEVEL SECURITY
+            TABLES=$(grep -c "CREATE TABLE" "$f" 2>/dev/null || true)
+            RLS=$(grep -c "ENABLE ROW LEVEL SECURITY" "$f" 2>/dev/null || true)
+            if [ "$TABLES" -gt 0 ] && [ "$RLS" -lt "$TABLES" ]; then
+              echo "⚠️  $f: Found $TABLES CREATE TABLE but only $RLS ENABLE ROW LEVEL SECURITY"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            # Check: no DROP TABLE or TRUNCATE in non-destructive migrations
+            if grep -qiE "^(DROP TABLE|TRUNCATE)" "$f" 2>/dev/null; then
+              echo "⚠️  $f: Contains DROP TABLE or TRUNCATE — verify this is intentional"
+            fi
+
+            # Check: SECURITY DEFINER functions must set search_path
+            DEFINER=$(grep -c "SECURITY DEFINER" "$f" 2>/dev/null || true)
+            SEARCH_PATH=$(grep -c "search_path" "$f" 2>/dev/null || true)
+            if [ "$DEFINER" -gt 0 ] && [ "$SEARCH_PATH" -lt "$DEFINER" ]; then
+              echo "❌ $f: SECURITY DEFINER without search_path set — AGENTS.md Rule 9"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "❌ $ERRORS lint issue(s) found"
+            exit 1
+          fi
+
+          echo "✅ All SQL lint checks passed"
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop
