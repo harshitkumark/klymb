@@ -1,0 +1,49 @@
+# === OS & Editor ===
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# === Xcode ===
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# === iOS Config (secrets) ===
+Config/Staging.xcconfig
+Config/Prod.xcconfig
+*.xcconfig
+!Config/Shared.xcconfig
+
+# === Supabase ===
+supabase/.temp/
+supabase/.branches/
+
+# === Environment & Secrets ===
+.env
+.env.*
+!.env.example
+
+# === Swift Package Manager ===
+.build/
+Packages/
+Package.resolved
+
+# === CocoaPods (if used later) ===
+Pods/
+
+# === Misc ===
+*.log
+tmp/
