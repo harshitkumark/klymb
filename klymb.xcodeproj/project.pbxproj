@@ -8,6 +8,12 @@
 
 /* Begin PBXFileReference section */
 		EE271B7430B0DF5B00033F2D /* klymb.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = klymb.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA00000100000000000000A1 /* AGENTS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = AGENTS.md; sourceTree = "<group>"; };
+		AA00000200000000000000A2 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		AA00000300000000000000A3 /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
+		AA00000400000000000000A4 /* supabase */ = {isa = PBXFileReference; lastKnownFileType = folder; path = supabase; sourceTree = "<group>"; };
+		AA00000500000000000000A5 /* .github */ = {isa = PBXFileReference; lastKnownFileType = folder; path = .github; sourceTree = "<group>"; };
+		AA00000600000000000000A6 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +38,12 @@
 		EE271B6B30B0DF5B00033F2D = {
 			isa = PBXGroup;
 			children = (
+				AA00000100000000000000A1 /* AGENTS.md */,
+				AA00000200000000000000A2 /* README.md */,
+				AA00000600000000000000A6 /* .gitignore */,
+				AA00000300000000000000A3 /* docs */,
+				AA00000400000000000000A4 /* supabase */,
+				AA00000500000000000000A5 /* .github */,
 				EE271B7630B0DF5B00033F2D /* klymb */,
 				EE271B7530B0DF5B00033F2D /* Products */,
 			);
