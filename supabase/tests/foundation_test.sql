@@ -19,10 +19,14 @@ VALUES
 INSERT INTO public.cities (name, country, iana_timezone)
 VALUES ('Bengaluru', 'India', 'Asia/Kolkata');
 
--- Create profiles for the test users
-INSERT INTO public.profiles (id, username, city_id) VALUES
-    ('a1111111-1111-1111-1111-111111111111', 'alice_test01', (SELECT id FROM public.cities WHERE name = 'Bengaluru')),
-    ('b2222222-2222-2222-2222-222222222222', 'bob_test0001', (SELECT id FROM public.cities WHERE name = 'Bengaluru'));
+-- Update profiles for the test users (auto-created by trigger on auth.users)
+UPDATE public.profiles
+SET username = 'alice_test01', city_id = (SELECT id FROM public.cities WHERE name = 'Bengaluru')
+WHERE id = 'a1111111-1111-1111-1111-111111111111';
+
+UPDATE public.profiles
+SET username = 'bob_test0001', city_id = (SELECT id FROM public.cities WHERE name = 'Bengaluru')
+WHERE id = 'b2222222-2222-2222-2222-222222222222';
 
 -- Seed a habit for testing
 INSERT INTO public.habits (key, display_name, unit, daily_kp_cap, manual_allowed)
