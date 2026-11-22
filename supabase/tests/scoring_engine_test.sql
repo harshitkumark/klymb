@@ -231,11 +231,12 @@ SELECT is(
 -- TEST 9: user_kp_total() derives accurate sum from ledger
 -- ============================================================
 
--- Total on 2026-11-20 = 500 KP. Total on 2026-11-19 = 60 KP (50 KP sleep + 10 KP sleep). Total = 560 KP.
+-- Total on 2026-11-20 = 500 KP. Total on 2026-11-19 = 60 KP (50 KP sleep + 10 KP sleep).
+-- Plus 50 KP from "First Steps" achievement unlocked on first activity. Total = 610 KP.
 SELECT is(
     public.user_kp_total('a9999999-9999-9999-9999-999999999999'::uuid),
-    560,
-    'user_kp_total() returns 560 KP matching ledger sum'
+    610,
+    'user_kp_total() returns 610 KP matching ledger sum (including 50 KP first_steps achievement)'
 );
 
 -- ============================================================
