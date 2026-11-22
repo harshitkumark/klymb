@@ -15,9 +15,10 @@ VALUES
     ('a1111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'alice@test.com', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{}', now(), now(), ''),
     ('b2222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bob@test.com', crypt('password', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{}', now(), now(), '');
 
--- Seed a city for testing
+-- Ensure test city exists
 INSERT INTO public.cities (name, country, iana_timezone)
-VALUES ('Bengaluru', 'India', 'Asia/Kolkata');
+VALUES ('Bengaluru', 'India', 'Asia/Kolkata')
+ON CONFLICT (name, country) DO NOTHING;
 
 -- Update profiles for the test users (auto-created by trigger on auth.users)
 UPDATE public.profiles
