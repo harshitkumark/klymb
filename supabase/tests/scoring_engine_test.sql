@@ -149,11 +149,12 @@ SELECT is(
     'Third steps activity on same day earns 0 KP'
 );
 
--- Verify no row with amount <= 0 exists in kp_ledger
+-- Verify no EARN row with amount <= 0 exists in kp_ledger
+-- (Note: revoke rows from anti-cheat legitimately have negative amounts)
 SELECT is(
-    (SELECT count(*)::integer FROM public.kp_ledger WHERE amount <= 0),
+    (SELECT count(*)::integer FROM public.kp_ledger WHERE type = 'earn' AND amount <= 0),
     0,
-    'Ledger never contains any row with amount <= 0'
+    'Ledger never contains an earn row with amount <= 0'
 );
 
 -- ============================================================
@@ -192,13 +193,15 @@ SELECT is(
 -- Then submit 10 km walk on 2026-11-20: 10 * 12 = 120 KP.
 -- Walking cap is 120, but global cap leaves only 55 KP! Should earn exactly 55 KP.
 
+-- Use 09:00-10:00 so the run does NOT overlap with sleep (23:00 Nov 19 - 07:00 Nov 20)
+-- which would trigger anti-cheat OV-R2 (activity during sleep)
 SELECT is(
     (SELECT (public.submit_activities(jsonb_build_array(
         jsonb_build_object(
             'habit_key', 'running',
             'quantity', 10.0,
-            'started_at', '2026-11-20 06:00:00+05:30',
-            'ended_at', '2026-11-20 07:00:00+05:30',
+            'started_at', '2026-11-20 09:00:00+05:30',
+            'ended_at', '2026-11-20 10:00:00+05:30',
             'source', 'healthkit',
             'source_sample_id', 'ian-run-1',
             'was_user_entered', false
