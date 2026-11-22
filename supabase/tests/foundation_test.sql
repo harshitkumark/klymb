@@ -29,9 +29,10 @@ UPDATE public.profiles
 SET username = 'bob_test0001', city_id = (SELECT id FROM public.cities WHERE name = 'Bengaluru')
 WHERE id = 'b2222222-2222-2222-2222-222222222222';
 
--- Seed a habit for testing
+-- Ensure test habit exists
 INSERT INTO public.habits (key, display_name, unit, daily_kp_cap, manual_allowed)
-VALUES ('steps', 'Steps', 'count', 150, false);
+VALUES ('steps', 'Steps', 'count', 150, false)
+ON CONFLICT (key) DO NOTHING;
 
 -- Seed a user habit for alice
 INSERT INTO public.user_habits (user_id, habit_id, active)
