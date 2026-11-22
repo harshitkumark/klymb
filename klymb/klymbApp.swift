@@ -2,16 +2,26 @@
 //  klymbApp.swift
 //  klymb
 //
-//  Created by Harshit Kumar on 21/11/26.
+//  Main application entry point.
 //
 
 import SwiftUI
 
 @main
 struct klymbApp: App {
+    @StateObject private var appState: AppState
+    private let container: AppContainer
+
+    init() {
+        let container = AppContainer()
+        self.container = container
+        self._appState = StateObject(wrappedValue: AppState(container: container))
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environmentObject(appState)
         }
     }
 }
