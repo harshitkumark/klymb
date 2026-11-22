@@ -47,3 +47,7 @@ Pods/
 # === Misc ===
 *.log
 tmp/
+
+# Edge Function secrets
+.env.local
+supabase/functions/*/.env.local
