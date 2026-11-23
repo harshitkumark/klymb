@@ -18,6 +18,7 @@ public protocol AppContainerProtocol {
     var achievementService: AchievementServiceProtocol { get }
     var socialService: SocialServiceProtocol { get }
     var notificationService: NotificationServiceProtocol { get }
+    var analyticsService: AnalyticsServiceProtocol { get }
 }
 
 public final class AppContainer: AppContainerProtocol {
@@ -31,6 +32,7 @@ public final class AppContainer: AppContainerProtocol {
     public let achievementService: AchievementServiceProtocol
     public let socialService: SocialServiceProtocol
     public let notificationService: NotificationServiceProtocol
+    public let analyticsService: AnalyticsServiceProtocol
 
     public init(
         authService: AuthServiceProtocol = MockAuthService(),
@@ -42,7 +44,8 @@ public final class AppContainer: AppContainerProtocol {
         challengeService: ChallengeServiceProtocol = MockChallengeService(),
         achievementService: AchievementServiceProtocol = MockAchievementService(),
         socialService: SocialServiceProtocol = MockSocialService(),
-        notificationService: NotificationServiceProtocol = MockNotificationService()
+        notificationService: NotificationServiceProtocol = MockNotificationService(),
+        analyticsService: AnalyticsServiceProtocol = MockAnalyticsService()
     ) {
         self.authService = authService
         self.profileService = profileService
@@ -54,6 +57,7 @@ public final class AppContainer: AppContainerProtocol {
         self.achievementService = achievementService
         self.socialService = socialService
         self.notificationService = notificationService
+        self.analyticsService = analyticsService
     }
 
     /// Convenience preview/mock container

@@ -87,3 +87,10 @@ public protocol NotificationServiceProtocol: AnyObject {
     func updatePreferences(overtaken: Bool?, challengeEnding: Bool?, streakRisk: Bool?) async throws
     func getPreferences() async throws -> NotificationPreferences
 }
+
+// MARK: - Analytics Service Protocol
+public protocol AnalyticsServiceProtocol: AnyObject {
+    func track(event: AnalyticsEvent)
+    func identify(userId: UUID)
+    func reset()
+}

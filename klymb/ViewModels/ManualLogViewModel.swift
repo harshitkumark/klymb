@@ -24,9 +24,11 @@ public final class ManualLogViewModel: ObservableObject {
     @Published public var errorMessage: String? = nil
 
     private let syncService: SyncServiceProtocol
+    private let analyticsService: AnalyticsServiceProtocol
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
         self.syncService = container.syncService
+        self.analyticsService = container.analyticsService
     }
 
     public var estimatedKP: Int {
@@ -96,6 +98,9 @@ public final class ManualLogViewModel: ObservableObject {
 
             // 2. Flush queue to backend
             _ = try await syncService.flushPendingQueue()
+
+            // 3. Track privacy-preserving analytics (category only, zero biometrics)
+            analyticsService.track(event: .manualLogSubmitted(category: selectedType.rawValue))
 
             HapticManager.shared.celebration()
 

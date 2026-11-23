@@ -368,3 +368,26 @@ public final class MockNotificationService: NotificationServiceProtocol {
         return preferences
     }
 }
+
+public final class MockAnalyticsService: AnalyticsServiceProtocol {
+    public private(set) var trackedEvents: [AnalyticsEvent] = []
+    public private(set) var identifiedUserId: UUID?
+
+    public init() {}
+
+    public func track(event: AnalyticsEvent) {
+        trackedEvents.append(event)
+        #if DEBUG
+        print("[Analytics] \(event.name): \(event.parameters)")
+        #endif
+    }
+
+    public func identify(userId: UUID) {
+        self.identifiedUserId = userId
+    }
+
+    public func reset() {
+        self.trackedEvents.removeAll()
+        self.identifiedUserId = nil
+    }
+}

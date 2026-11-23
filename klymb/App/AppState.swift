@@ -60,6 +60,7 @@ public final class AppState: ObservableObject {
         do {
             if let profile = try await container.authService.getCurrentProfile() {
                 self.activeProfile = profile
+                container.analyticsService.identify(userId: profile.id)
                 let needsOnboarding = profile.username.hasPrefix("user_") || profile.cityId == nil
                 if needsOnboarding {
                     self.sessionStatus = .needsOnboarding(userId: profile.id)
@@ -79,9 +80,11 @@ public final class AppState: ObservableObject {
     public func signOut() async {
         do {
             try await container.authService.signOut()
+            container.analyticsService.reset()
             self.activeProfile = nil
             self.sessionStatus = .unauthenticated
         } catch {
+            container.analyticsService.reset()
             self.sessionStatus = .unauthenticated
         }
     }
