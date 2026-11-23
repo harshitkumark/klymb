@@ -9,22 +9,39 @@ import SwiftUI
 
 public struct RootView: View {
     @EnvironmentObject private var appState: AppState
+    @StateObject private var networkMonitor = NetworkMonitor.shared
+    @State private var versionInfo = AppVersionInfo()
 
     public init() {}
 
     public var body: some View {
-        Group {
-            switch appState.sessionStatus {
-            case .loading:
-                LoadingView()
-            case .unauthenticated:
-                WelcomeView()
-            case .needsOnboarding:
-                OnboardingContainerView()
-            case .authenticated:
-                MainTabView()
+        ZStack(alignment: .top) {
+            if versionInfo.isUpdateRequired {
+                ForceUpdateView(versionInfo: versionInfo)
+            } else {
+                Group {
+                    switch appState.sessionStatus {
+                    case .loading:
+                        LoadingView()
+                    case .unauthenticated:
+                        WelcomeView()
+                    case .needsOnboarding:
+                        OnboardingContainerView()
+                    case .authenticated:
+                        MainTabView()
+                    }
+                }
+
+                // Global Offline Notification Banner
+                if !networkMonitor.isConnected {
+                    OfflineBannerView()
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .zIndex(999)
+                }
             }
         }
+        .environmentObject(networkMonitor)
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: networkMonitor.isConnected)
         .task {
             await appState.checkCurrentSession()
         }
