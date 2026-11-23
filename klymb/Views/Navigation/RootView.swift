@@ -18,7 +18,7 @@ public struct RootView: View {
             case .loading:
                 LoadingView()
             case .unauthenticated:
-                WelcomePlaceholderView()
+                WelcomeView()
             case .needsOnboarding:
                 OnboardingPlaceholderView()
             case .authenticated:
