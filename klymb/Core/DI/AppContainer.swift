@@ -10,6 +10,7 @@ import Foundation
 public protocol AppContainerProtocol {
     var authService: AuthServiceProtocol { get }
     var profileService: ProfileServiceProtocol { get }
+    var healthKitService: HealthKitServiceProtocol { get }
     var activityService: ActivityServiceProtocol { get }
     var leaderboardService: LeaderboardServiceProtocol { get }
     var challengeService: ChallengeServiceProtocol { get }
@@ -21,6 +22,7 @@ public protocol AppContainerProtocol {
 public final class AppContainer: AppContainerProtocol {
     public let authService: AuthServiceProtocol
     public let profileService: ProfileServiceProtocol
+    public let healthKitService: HealthKitServiceProtocol
     public let activityService: ActivityServiceProtocol
     public let leaderboardService: LeaderboardServiceProtocol
     public let challengeService: ChallengeServiceProtocol
@@ -31,6 +33,7 @@ public final class AppContainer: AppContainerProtocol {
     public init(
         authService: AuthServiceProtocol = MockAuthService(),
         profileService: ProfileServiceProtocol = MockProfileService(),
+        healthKitService: HealthKitServiceProtocol = MockHealthKitService(),
         activityService: ActivityServiceProtocol = MockActivityService(),
         leaderboardService: LeaderboardServiceProtocol = MockLeaderboardService(),
         challengeService: ChallengeServiceProtocol = MockChallengeService(),
@@ -40,6 +43,7 @@ public final class AppContainer: AppContainerProtocol {
     ) {
         self.authService = authService
         self.profileService = profileService
+        self.healthKitService = healthKitService
         self.activityService = activityService
         self.leaderboardService = leaderboardService
         self.challengeService = challengeService
@@ -51,5 +55,12 @@ public final class AppContainer: AppContainerProtocol {
     /// Convenience preview/mock container
     public static var mock: AppContainer {
         AppContainer()
+    }
+
+    /// Production container wired with real device services
+    public static var live: AppContainer {
+        AppContainer(
+            healthKitService: HealthKitService()
+        )
     }
 }
