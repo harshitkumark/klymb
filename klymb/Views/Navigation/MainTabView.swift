@@ -15,11 +15,7 @@ public struct MainTabView: View {
 
     public var body: some View {
         TabView(selection: $appState.selectedTab) {
-            PlaceholderScreen(
-                title: "Home",
-                subtitle: "Daily Habits, KP Counter & Streak",
-                icon: "house.fill"
-            )
+            HomeView()
             .tabItem {
                 Label(MainTab.home.title, systemImage: MainTab.home.iconName)
             }
