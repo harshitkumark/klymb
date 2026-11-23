@@ -116,12 +116,17 @@ public struct ManualLogView: View {
                                         Text("\(Int(viewModel.quantity))")
                                             .font(.system(size: 44, weight: .black, design: .rounded))
                                             .foregroundStyle(ColorTokens.textPrimary)
+                                            .minimumScaleFactor(0.7)
+                                            .lineLimit(1)
 
                                         Text(viewModel.selectedType.unit.uppercased())
                                             .font(TypographyTokens.caption1.weight(.bold))
                                             .foregroundStyle(ColorTokens.electricCyan)
                                     }
                                     .frame(minWidth: 100)
+                                    .accessibilityElement(children: .combine)
+                                    .accessibilityLabel("Current amount: \(Int(viewModel.quantity)) \(viewModel.selectedType.unit)")
+                                    .accessibilityValue("\(Int(viewModel.quantity)) \(viewModel.selectedType.unit)")
 
                                     // Increment Button
                                     Button {

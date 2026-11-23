@@ -182,6 +182,8 @@ private struct HomeHeroKPCard: View {
             }
             .frame(maxWidth: .infinity)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Today's KP: \(viewModel.todayKP) out of \(viewModel.dailyGoalKP) KP daily goal, plus \(viewModel.kpDeltaToday) KP today. Synced \(viewModel.lastSyncDescription).")
     }
 }
 
