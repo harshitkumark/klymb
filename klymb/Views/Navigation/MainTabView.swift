@@ -33,11 +33,7 @@ public struct MainTabView: View {
             }
             .tag(MainTab.compete)
 
-            PlaceholderScreen(
-                title: "Challenges",
-                subtitle: "Daily, Weekly & Community Goals",
-                icon: "flag.checkered"
-            )
+            ChallengesView()
             .tabItem {
                 Label(MainTab.challenges.title, systemImage: MainTab.challenges.iconName)
             }

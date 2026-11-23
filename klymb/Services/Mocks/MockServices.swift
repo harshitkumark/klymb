@@ -192,19 +192,39 @@ public final class MockLeaderboardService: LeaderboardServiceProtocol {
 }
 
 public final class MockChallengeService: ChallengeServiceProtocol {
+    private var challenges: [Challenge] = [
+        Challenge(id: 1, type: "daily", title: "Daily 10K Steps", description: "Hit 10,000 steps today to claim your daily badge.", habitKey: "steps", target: 10000, rewardKP: 50, startAt: Date(), endAt: Date().addingTimeInterval(28800), progress: 7500, isJoined: true),
+        Challenge(id: 2, type: "daily", title: "Hydration Streak", description: "Log 3,000 ml of pure water intake.", habitKey: "water", target: 3000, rewardKP: 40, startAt: Date(), endAt: Date().addingTimeInterval(36000), progress: 1750, isJoined: true),
+        Challenge(id: 3, type: "weekly", title: "Weekend 25K Runner", description: "Log 25 km of running this week across sessions.", habitKey: "running", target: 25.0, rewardKP: 150, startAt: Date(), endAt: Date().addingTimeInterval(86400 * 4), progress: 14.5, isJoined: true),
+        Challenge(id: 4, type: "weekly", title: "Zen Master", description: "Complete 60 minutes of focused mindfulness or meditation.", habitKey: "mindfulness", target: 60.0, rewardKP: 80, startAt: Date(), endAt: Date().addingTimeInterval(86400 * 5), progress: 30.0, isJoined: false),
+        Challenge(id: 5, type: "weekly", title: "Century Cyclist", description: "Pedal 50 km on road or indoor trainer.", habitKey: "cycling", target: 50.0, rewardKP: 180, startAt: Date(), endAt: Date().addingTimeInterval(86400 * 6), progress: 0.0, isJoined: false),
+        Challenge(id: 6, type: "community", title: "SF City 1M Step March", description: "San Francisco athletes uniting for 1,000,000 total steps.", habitKey: "steps", target: 1000000, rewardKP: 300, startAt: Date(), endAt: Date().addingTimeInterval(86400 * 10), progress: 684200, isJoined: true)
+    ]
+
     public init() {}
 
     public func getActiveChallenges() async throws -> [Challenge] {
-        return [
-            Challenge(id: 1, type: "daily", title: "Daily 10K Steps", description: "Hit 10,000 steps before midnight", habitKey: "steps", target: 10000, rewardKP: 50, startAt: Date(), endAt: Date().addingTimeInterval(86400), progress: 7500, isJoined: true),
-            Challenge(id: 2, type: "weekly", title: "Weekly 25K Runner", description: "Log 25 km of running this week", habitKey: "running", target: 25.0, rewardKP: 150, startAt: Date(), endAt: Date().addingTimeInterval(86400 * 5), progress: 12.4, isJoined: true)
-        ]
+        return challenges
     }
 
-    public func joinChallenge(id: Int64) async throws {}
+    public func joinChallenge(id: Int64) async throws {
+        if let idx = challenges.firstIndex(where: { $0.id == id }) {
+            challenges[idx].isJoined = true
+        }
+    }
+
+    public func leaveChallenge(id: Int64) async throws {
+        if let idx = challenges.firstIndex(where: { $0.id == id }) {
+            challenges[idx].isJoined = false
+        }
+    }
 
     public func getChallengeStandings(id: Int64) async throws -> [LeaderboardEntry] {
-        return []
+        return [
+            LeaderboardEntry(userId: UUID(), username: "speedy_runner", displayName: "Speedy", totalKP: 1840, rank: 1),
+            LeaderboardEntry(userId: UUID(), username: "iron_yogi", displayName: "Iron Yogi", totalKP: 1620, rank: 2),
+            LeaderboardEntry(userId: UUID(), username: "champion_dev", displayName: "You", totalKP: 1250, rank: 3, isCurrentUser: true)
+        ]
     }
 }
 

@@ -57,6 +57,7 @@ public protocol LeaderboardServiceProtocol: AnyObject {
 public protocol ChallengeServiceProtocol: AnyObject {
     func getActiveChallenges() async throws -> [Challenge]
     func joinChallenge(id: Int64) async throws
+    func leaveChallenge(id: Int64) async throws
     func getChallengeStandings(id: Int64) async throws -> [LeaderboardEntry]
 }
 
