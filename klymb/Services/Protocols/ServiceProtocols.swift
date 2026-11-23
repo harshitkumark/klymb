@@ -39,6 +39,10 @@ public protocol ProfileServiceProtocol: AnyObject {
     func getUserHabits() async throws -> [Habit]
     func updateProfile(displayName: String?, avatarPreset: String?) async throws -> Profile
     func getStreak() async throws -> StreakInfo
+    func getCityCooldown() async throws -> CityChangeCooldown
+    func exportUserData() async throws -> String
+    func requestAccountDeletion() async throws -> AccountDeletionInfo
+    func cancelAccountDeletion() async throws
 }
 
 // MARK: - Activity Service Protocol

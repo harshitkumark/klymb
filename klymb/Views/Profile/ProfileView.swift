@@ -13,6 +13,7 @@ public struct ProfileView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: ProfileViewModel
     @State private var showNotificationPreferences: Bool = false
+    @State private var showSettings: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
@@ -37,9 +38,15 @@ public struct ProfileView: View {
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
                     // 4. Account Actions
-                    ProfileAccountSection(appState: appState, onOpenNotifications: {
-                        showNotificationPreferences = true
-                    })
+                    ProfileAccountSection(
+                        appState: appState,
+                        onOpenNotifications: {
+                            showNotificationPreferences = true
+                        },
+                        onOpenSettings: {
+                            showSettings = true
+                        }
+                    )
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                         .padding(.top, LayoutTokens.spacingM)
 
@@ -54,14 +61,25 @@ public struct ProfileView: View {
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showNotificationPreferences = true
-                    } label: {
-                        Image(systemName: "bell.badge")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(ColorTokens.textPrimary)
+                    HStack(spacing: LayoutTokens.spacingM) {
+                        Button {
+                            showNotificationPreferences = true
+                        } label: {
+                            Image(systemName: "bell.badge")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(ColorTokens.textPrimary)
+                        }
+                        .accessibilityLabel("Notification Settings")
+
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(ColorTokens.textPrimary)
+                        }
+                        .accessibilityLabel("App Settings")
                     }
-                    .accessibilityLabel("Notification Settings")
                 }
             }
             .refreshable {
@@ -79,6 +97,9 @@ public struct ProfileView: View {
             }
             .sheet(isPresented: $showNotificationPreferences) {
                 NotificationPreferencesView()
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
             }
         }
     }
@@ -488,9 +509,40 @@ private struct AchievementDetailSheet: View {
 private struct ProfileAccountSection: View {
     @ObservedObject var appState: AppState
     let onOpenNotifications: () -> Void
+    let onOpenSettings: () -> Void
 
     var body: some View {
         VStack(spacing: LayoutTokens.spacingM) {
+            Button(action: onOpenSettings) {
+                HStack(spacing: LayoutTokens.spacingM) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(ColorTokens.electricCyan)
+                        .frame(width: 24)
+
+                    Text("Settings & Privacy")
+                        .font(TypographyTokens.subheadline.weight(.semibold))
+                        .foregroundStyle(ColorTokens.textPrimary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(ColorTokens.textTertiary)
+                }
+                .padding(.horizontal, LayoutTokens.paddingM)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(ColorTokens.backgroundSecondary)
+                .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
+                .overlay(
+                    RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
+                        .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open Settings and Privacy")
+
             Button(action: onOpenNotifications) {
                 HStack(spacing: LayoutTokens.spacingM) {
                     Image(systemName: "bell.badge.fill")

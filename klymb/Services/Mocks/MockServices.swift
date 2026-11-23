@@ -73,7 +73,14 @@ public final class MockProfileService: ProfileServiceProtocol {
     }
 
     public func setCity(cityId: Int64) async throws {
+        if let lastChanged = currentProfile?.cityChangedAt, currentProfile?.cityId != nil {
+            let elapsed = Date().timeIntervalSince(lastChanged)
+            if elapsed < 30 * 86400 {
+                throw NSError(domain: "klymb.city", code: 22023, userInfo: [NSLocalizedDescriptionKey: "ERR_CITY_CHANGE_COOLDOWN"])
+            }
+        }
         currentProfile?.cityId = cityId
+        currentProfile?.cityChangedAt = Date()
         let cities = try await getCities()
         if let city = cities.first(where: { $0.id == cityId }) {
             currentProfile?.cityName = city.name
@@ -149,6 +156,45 @@ public final class MockProfileService: ProfileServiceProtocol {
 
     public func getStreak() async throws -> StreakInfo {
         return streak
+    }
+
+    public var deletionRequest: AccountDeletionInfo?
+
+    public func getCityCooldown() async throws -> CityChangeCooldown {
+        CityChangeCooldown(lastChangedAt: currentProfile?.cityChangedAt)
+    }
+
+    public func exportUserData() async throws -> String {
+        let export: [String: Any] = [
+            "export_version": "1.0",
+            "exported_at": ISO8601DateFormatter().string(from: Date()),
+            "profile": [
+                "id": currentProfile?.id.uuidString ?? "",
+                "username": currentProfile?.username ?? "",
+                "display_name": currentProfile?.displayName ?? "",
+                "city": currentProfile?.cityName ?? "",
+                "total_kp": currentProfile?.totalKP ?? 0
+            ],
+            "habits": habits.filter { $0.isSelected }.map { ["id": $0.id, "key": $0.key, "name": $0.displayName] },
+            "streak": [
+                "current_streak": streak.currentStreak,
+                "longest_streak": streak.longestStreak,
+                "freezes_remaining": streak.freezesRemaining
+            ],
+            "gdpr_compliance": "All personal identifiers and activity logs included pursuant to GDPR Article 20."
+        ]
+        let data = try JSONSerialization.data(withJSONObject: export, options: [.prettyPrinted, .sortedKeys])
+        return String(data: data, encoding: .utf8) ?? "{}"
+    }
+
+    public func requestAccountDeletion() async throws -> AccountDeletionInfo {
+        let info = AccountDeletionInfo()
+        self.deletionRequest = info
+        return info
+    }
+
+    public func cancelAccountDeletion() async throws {
+        self.deletionRequest = nil
     }
 }
 

@@ -14,6 +14,7 @@ public struct Profile: Identifiable, Codable, Equatable {
     public var avatarPreset: String
     public var cityId: Int64?
     public var cityName: String?
+    public var cityChangedAt: Date?
     public var totalKP: Int
     public var createdAt: Date
     public var updatedAt: Date
@@ -25,6 +26,7 @@ public struct Profile: Identifiable, Codable, Equatable {
         avatarPreset: String = "default",
         cityId: Int64? = nil,
         cityName: String? = nil,
+        cityChangedAt: Date? = nil,
         totalKP: Int = 0,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -35,6 +37,7 @@ public struct Profile: Identifiable, Codable, Equatable {
         self.avatarPreset = avatarPreset
         self.cityId = cityId
         self.cityName = cityName
+        self.cityChangedAt = cityChangedAt
         self.totalKP = totalKP
         self.createdAt = createdAt
         self.updatedAt = updatedAt
