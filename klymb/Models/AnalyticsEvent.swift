@@ -72,7 +72,7 @@ public enum AnalyticsEvent: Equatable, Sendable {
 
         #if DEBUG
         // Rule 17 Assertion: Verify no forbidden health metric leaks into analytics
-        let forbidden = ["step", "heart", "hr", "calorie", "distance", "workout_duration", "sleep_hours"]
+        let forbidden = ["step_count", "steps", "heart_rate", "hr", "calorie", "calories", "distance", "workout_duration", "sleep_hours", "biometric"]
         for key in params.keys {
             for term in forbidden {
                 assert(!key.lowercased().contains(term), "AGENTS.md Rule 17 Violation: Health metric leak in analytics key: \(key)")

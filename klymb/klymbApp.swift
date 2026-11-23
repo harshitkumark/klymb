@@ -38,6 +38,12 @@ struct klymbApp: App {
         self.container = container
         self._appState = StateObject(wrappedValue: state)
         NotificationManager.shared.configure(service: container.notificationService, appState: state)
+
+        #if DEBUG
+        Task {
+            await AppTestRunner.runAllSuites()
+        }
+        #endif
     }
 
     var body: some Scene {
