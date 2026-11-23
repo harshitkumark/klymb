@@ -48,3 +48,15 @@ public extension Font {
         public static let rankNumber = Font.system(.title2, design: .monospaced, weight: .bold)
     }
 }
+
+// MARK: - Direct Typography Token Aliases
+public enum TypographyTokens {
+    public static let largeTitle = Font.Klymb.titleHero
+    public static let title1 = Font.Klymb.titleLarge
+    public static let title2 = Font.Klymb.titleMedium
+    public static let headline = Font.Klymb.headline
+    public static let body = Font.Klymb.body
+    public static let subheadline = Font.Klymb.bodySmall
+    public static let caption1 = Font.Klymb.caption
+    public static let caption2 = Font.Klymb.captionSmall
+}

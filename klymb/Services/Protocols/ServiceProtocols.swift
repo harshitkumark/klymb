@@ -18,13 +18,26 @@ public protocol AuthServiceProtocol: AnyObject {
 }
 
 // MARK: - Profile & Habit Service Protocol
+public struct CityItem: Identifiable, Codable, Equatable, Hashable, Sendable {
+    public let id: Int64
+    public let name: String
+    public let country: String
+
+    public init(id: Int64, name: String, country: String) {
+        self.id = id
+        self.name = name
+        self.country = country
+    }
+}
+
 public protocol ProfileServiceProtocol: AnyObject {
     func setUsername(_ username: String) async throws -> String
     func setCity(cityId: Int64) async throws
-    func getCities() async throws -> [(id: Int64, name: String, state: String)]
+    func getCities() async throws -> [CityItem]
     func getHabits() async throws -> [Habit]
     func setUserHabits(habitIds: [Int64]) async throws
     func getUserHabits() async throws -> [Habit]
+    func updateProfile(displayName: String?, avatarPreset: String?) async throws -> Profile
     func getStreak() async throws -> StreakInfo
 }
 

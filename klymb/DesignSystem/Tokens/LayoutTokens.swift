@@ -85,3 +85,24 @@ public extension View {
         self.modifier(KlymbCardStyle(cornerRadius: cornerRadius, isHighlighted: isHighlighted))
     }
 }
+
+// MARK: - Direct Layout Token Aliases
+public enum LayoutTokens {
+    public static let spacingXS: CGFloat = KlymbSpacing.xs
+    public static let spacingS: CGFloat = KlymbSpacing.sm
+    public static let spacingM: CGFloat = KlymbSpacing.md
+    public static let spacingL: CGFloat = KlymbSpacing.lg
+    public static let spacingXL: CGFloat = KlymbSpacing.xl
+    public static let spacingXXL: CGFloat = KlymbSpacing.xxl
+
+    public static let paddingS: CGFloat = KlymbSpacing.sm
+    public static let paddingM: CGFloat = KlymbSpacing.md
+    public static let paddingL: CGFloat = KlymbSpacing.lg
+
+    public static let radiusS: CGFloat = KlymbRadius.sm
+    public static let radiusM: CGFloat = KlymbRadius.md
+    public static let radiusL: CGFloat = KlymbRadius.lg
+    public static let radiusXL: CGFloat = KlymbRadius.xl
+
+    public static let screenHorizontalPadding: CGFloat = KlymbSpacing.lg
+}

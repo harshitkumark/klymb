@@ -79,4 +79,14 @@ public final class HapticManager {
         generator.prepare()
         generator.notificationOccurred(.error)
     }
+
+    /// Selection feedback
+    public func selection() {
+        tabSwitch()
+    }
+
+    /// Celebration feedback for rank up / milestone / onboarding completion
+    public func celebration() {
+        rankUp()
+    }
 }

@@ -20,7 +20,7 @@ public struct RootView: View {
             case .unauthenticated:
                 WelcomeView()
             case .needsOnboarding:
-                OnboardingPlaceholderView()
+                OnboardingContainerView()
             case .authenticated:
                 MainTabView()
             }
