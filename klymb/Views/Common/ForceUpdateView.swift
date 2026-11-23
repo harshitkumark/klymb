@@ -11,9 +11,14 @@ import SwiftUI
 
 public struct ForceUpdateView: View {
     public let versionInfo: AppVersionInfo
+    public var onDismiss: (() -> Void)?
 
-    public init(versionInfo: AppVersionInfo = AppVersionInfo()) {
+    public init(
+        versionInfo: AppVersionInfo = AppVersionInfo(),
+        onDismiss: (() -> Void)? = nil
+    ) {
         self.versionInfo = versionInfo
+        self.onDismiss = onDismiss
     }
 
     public var body: some View {
@@ -89,22 +94,32 @@ public struct ForceUpdateView: View {
                 Spacer()
 
                 // Update Button
-                Button {
-                    UIApplication.shared.open(versionInfo.appStoreURL)
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.down.app.fill")
-                            .font(.system(size: 16, weight: .bold))
-                        Text("Update via App Store")
-                            .font(TypographyTokens.headline)
+                VStack(spacing: LayoutTokens.spacingM) {
+                    Button {
+                        UIApplication.shared.open(versionInfo.appStoreURL)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.down.app.fill")
+                                .font(.system(size: 16, weight: .bold))
+                            Text("Update via App Store")
+                                .font(TypographyTokens.headline)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(ColorTokens.electricCyan)
+                        .foregroundStyle(Color.black)
+                        .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background(ColorTokens.electricCyan)
-                    .foregroundStyle(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
+                    .buttonStyle(.plain)
+
+                    #if DEBUG
+                    if let onDismiss = onDismiss {
+                        Button("Developer Mode: Dismiss Screen", action: onDismiss)
+                            .font(TypographyTokens.caption1)
+                            .foregroundStyle(ColorTokens.textTertiary)
+                    }
+                    #endif
                 }
-                .buttonStyle(.plain)
                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                 .padding(.bottom, LayoutTokens.spacingL)
             }

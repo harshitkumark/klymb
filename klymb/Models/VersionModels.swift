@@ -15,14 +15,16 @@ public struct AppVersionInfo: Equatable, Sendable {
     public let minSupportedBuild: Int
     public let appStoreURL: URL
     public let releaseNotes: String?
+    public var forceUpdateEnabled: Bool
 
     public init(
         currentVersion: String = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0",
-        currentBuild: Int = Int(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "42") ?? 42,
+        currentBuild: Int = Int(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1") ?? 1,
         minSupportedVersion: String = "1.0.0",
-        minSupportedBuild: Int = 40,
+        minSupportedBuild: Int = 1,
         appStoreURL: URL = URL(string: "https://apps.apple.com/app/klymb/id6739000000")!,
-        releaseNotes: String? = "Performance improvements, enhanced anti-cheat validation, and updated seasonal challenge mechanics."
+        releaseNotes: String? = "Performance improvements, enhanced anti-cheat validation, and updated seasonal challenge mechanics.",
+        forceUpdateEnabled: Bool = false
     ) {
         self.currentVersion = currentVersion
         self.currentBuild = currentBuild
@@ -30,9 +32,15 @@ public struct AppVersionInfo: Equatable, Sendable {
         self.minSupportedBuild = minSupportedBuild
         self.appStoreURL = appStoreURL
         self.releaseNotes = releaseNotes
+        self.forceUpdateEnabled = forceUpdateEnabled
     }
 
     public var isUpdateRequired: Bool {
-        return currentBuild < minSupportedBuild
+        #if DEBUG
+        // Never block developers during local testing or preview builds
+        return false
+        #else
+        return forceUpdateEnabled && (currentBuild < minSupportedBuild)
+        #endif
     }
 }

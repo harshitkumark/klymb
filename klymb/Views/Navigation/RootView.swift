@@ -17,7 +17,9 @@ public struct RootView: View {
     public var body: some View {
         ZStack(alignment: .top) {
             if versionInfo.isUpdateRequired {
-                ForceUpdateView(versionInfo: versionInfo)
+                ForceUpdateView(versionInfo: versionInfo) {
+                    versionInfo.forceUpdateEnabled = false
+                }
             } else {
                 Group {
                     switch appState.sessionStatus {
