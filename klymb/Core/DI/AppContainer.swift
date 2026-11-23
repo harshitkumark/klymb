@@ -11,6 +11,7 @@ public protocol AppContainerProtocol {
     var authService: AuthServiceProtocol { get }
     var profileService: ProfileServiceProtocol { get }
     var healthKitService: HealthKitServiceProtocol { get }
+    var syncService: SyncServiceProtocol { get }
     var activityService: ActivityServiceProtocol { get }
     var leaderboardService: LeaderboardServiceProtocol { get }
     var challengeService: ChallengeServiceProtocol { get }
@@ -23,6 +24,7 @@ public final class AppContainer: AppContainerProtocol {
     public let authService: AuthServiceProtocol
     public let profileService: ProfileServiceProtocol
     public let healthKitService: HealthKitServiceProtocol
+    public let syncService: SyncServiceProtocol
     public let activityService: ActivityServiceProtocol
     public let leaderboardService: LeaderboardServiceProtocol
     public let challengeService: ChallengeServiceProtocol
@@ -34,6 +36,7 @@ public final class AppContainer: AppContainerProtocol {
         authService: AuthServiceProtocol = MockAuthService(),
         profileService: ProfileServiceProtocol = MockProfileService(),
         healthKitService: HealthKitServiceProtocol = MockHealthKitService(),
+        syncService: SyncServiceProtocol = MockSyncService(),
         activityService: ActivityServiceProtocol = MockActivityService(),
         leaderboardService: LeaderboardServiceProtocol = MockLeaderboardService(),
         challengeService: ChallengeServiceProtocol = MockChallengeService(),
@@ -44,6 +47,7 @@ public final class AppContainer: AppContainerProtocol {
         self.authService = authService
         self.profileService = profileService
         self.healthKitService = healthKitService
+        self.syncService = syncService
         self.activityService = activityService
         self.leaderboardService = leaderboardService
         self.challengeService = challengeService
@@ -59,8 +63,18 @@ public final class AppContainer: AppContainerProtocol {
 
     /// Production container wired with real device services
     public static var live: AppContainer {
-        AppContainer(
-            healthKitService: HealthKitService()
+        let healthKit = HealthKitService()
+        let profile = MockProfileService()
+        let activity = MockActivityService()
+        return AppContainer(
+            profileService: profile,
+            healthKitService: healthKit,
+            syncService: ActivitySyncService(
+                healthKitService: healthKit,
+                activityService: activity,
+                profileService: profile
+            ),
+            activityService: activity
         )
     }
 }
