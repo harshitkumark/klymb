@@ -68,10 +68,13 @@ public protocol AchievementServiceProtocol: AnyObject {
 
 // MARK: - Social Service Protocol
 public protocol SocialServiceProtocol: AnyObject {
-    func searchUsers(query: String) async throws -> [Profile]
-    func getFriends() async throws -> [Profile]
+    func searchUsers(query: String) async throws -> [FriendItem]
+    func getFriends() async throws -> [FriendItem]
+    func getIncomingRequests() async throws -> [FriendItem]
     func sendFriendRequest(targetUserId: UUID) async throws
     func acceptFriendRequest(requesterId: UUID) async throws
+    func declineFriendRequest(requesterId: UUID) async throws
+    func cheerFriend(targetUserId: UUID) async throws
 }
 
 // MARK: - Notification Service Protocol

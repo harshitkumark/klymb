@@ -12,6 +12,7 @@ import SwiftUI
 public struct CompeteView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: CompeteViewModel
+    @State private var showFriendsSheet: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
@@ -120,12 +121,35 @@ public struct CompeteView: View {
             .task {
                 await viewModel.fetchLeaderboard()
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showFriendsSheet = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "person.2.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("Friends")
+                                .font(TypographyTokens.caption1.bold())
+                        }
+                        .foregroundStyle(ColorTokens.electricCyan)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(ColorTokens.electricCyan.opacity(0.12))
+                        .clipShape(Capsule())
+                    }
+                    .accessibilityLabel("Friends and Social")
+                }
+            }
             .sheet(item: $viewModel.selectedAthlete) { athlete in
                 AthleteProfileSheet(athlete: athlete) {
                     viewModel.dismissAthleteProfile()
                 }
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showFriendsSheet) {
+                FriendsView()
             }
         }
     }
