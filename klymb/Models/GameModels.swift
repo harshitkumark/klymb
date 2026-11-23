@@ -19,6 +19,7 @@ public struct Activity: Identifiable, Codable, Equatable {
     public let sourceSampleId: String?
     public let wasUserEntered: Bool
     public var kpEarned: Int?
+    public var deviceInfo: [String: String]?
 
     public init(
         id: Int64? = nil,
@@ -31,7 +32,8 @@ public struct Activity: Identifiable, Codable, Equatable {
         source: String = "healthkit",
         sourceSampleId: String? = nil,
         wasUserEntered: Bool = false,
-        kpEarned: Int? = nil
+        kpEarned: Int? = nil,
+        deviceInfo: [String: String]? = nil
     ) {
         self.id = id
         self.habitId = habitId
@@ -44,6 +46,7 @@ public struct Activity: Identifiable, Codable, Equatable {
         self.sourceSampleId = sourceSampleId
         self.wasUserEntered = wasUserEntered
         self.kpEarned = kpEarned
+        self.deviceInfo = deviceInfo
     }
 }
 
