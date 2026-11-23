@@ -81,4 +81,5 @@ public protocol SocialServiceProtocol: AnyObject {
 public protocol NotificationServiceProtocol: AnyObject {
     func registerDeviceToken(_ token: String, environment: String) async throws
     func updatePreferences(overtaken: Bool?, challengeEnding: Bool?, streakRisk: Bool?) async throws
+    func getPreferences() async throws -> NotificationPreferences
 }

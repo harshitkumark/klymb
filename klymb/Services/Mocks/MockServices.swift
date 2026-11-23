@@ -303,7 +303,22 @@ public final class MockSocialService: SocialServiceProtocol {
 }
 
 public final class MockNotificationService: NotificationServiceProtocol {
+    private var preferences = NotificationPreferences(overtaken: true, challengeEnding: true, streakRisk: true)
+    public private(set) var registeredToken: String?
+
     public init() {}
-    public func registerDeviceToken(_ token: String, environment: String) async throws {}
-    public func updatePreferences(overtaken: Bool?, challengeEnding: Bool?, streakRisk: Bool?) async throws {}
+
+    public func registerDeviceToken(_ token: String, environment: String) async throws {
+        self.registeredToken = token
+    }
+
+    public func updatePreferences(overtaken: Bool?, challengeEnding: Bool?, streakRisk: Bool?) async throws {
+        if let o = overtaken { preferences.overtaken = o }
+        if let c = challengeEnding { preferences.challengeEnding = c }
+        if let s = streakRisk { preferences.streakRisk = s }
+    }
+
+    public func getPreferences() async throws -> NotificationPreferences {
+        return preferences
+    }
 }
