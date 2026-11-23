@@ -21,11 +21,7 @@ public struct MainTabView: View {
             }
             .tag(MainTab.home)
 
-            PlaceholderScreen(
-                title: "Log Activity",
-                subtitle: "Manual logging for Water, Workout, Mindfulness",
-                icon: "plus.circle.fill"
-            )
+            ManualLogView()
             .tabItem {
                 Label(MainTab.log.title, systemImage: MainTab.log.iconName)
             }
