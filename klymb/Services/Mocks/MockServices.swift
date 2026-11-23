@@ -233,9 +233,14 @@ public final class MockAchievementService: AchievementServiceProtocol {
 
     public func getAchievements() async throws -> [Achievement] {
         return [
-            Achievement(id: 1, key: "first_steps", displayName: "First Steps", description: "Submit your first activity", category: "milestone", tier: "bronze", rewardKP: 50, unlockedAt: Date()),
-            Achievement(id: 2, key: "streak_7", displayName: "Week Warrior", description: "Reach a 7-day streak", category: "streak", tier: "silver", rewardKP: 100, unlockedAt: Date()),
-            Achievement(id: 3, key: "century_run", displayName: "Century Club", description: "Run 100 km total", category: "distance", tier: "gold", rewardKP: 250, unlockedAt: nil)
+            Achievement(id: 1, key: "first_steps", displayName: "First Steps", description: "Submit your first activity to the ledger", category: "milestone", tier: "bronze", rewardKP: 50, unlockedAt: Date().addingTimeInterval(-86400 * 14)),
+            Achievement(id: 2, key: "streak_7", displayName: "Week Warrior", description: "Reach a 7-day daily discipline streak", category: "streak", tier: "silver", rewardKP: 100, unlockedAt: Date().addingTimeInterval(-86400 * 2)),
+            Achievement(id: 3, key: "podium_finish", displayName: "Top 3 Podium", description: "Claim a top 3 podium spot in any city leaderboard", category: "competition", tier: "gold", rewardKP: 200, unlockedAt: Date().addingTimeInterval(-3600 * 6)),
+            Achievement(id: 4, key: "hydro_pro", displayName: "Aqua Disciplined", description: "Hit your daily water target 5 days in a row", category: "milestone", tier: "bronze", rewardKP: 75, unlockedAt: Date().addingTimeInterval(-86400 * 5)),
+            Achievement(id: 5, key: "century_run", displayName: "Century Club", description: "Accumulate 100 km of total running distance", category: "distance", tier: "gold", rewardKP: 250, unlockedAt: nil),
+            Achievement(id: 6, key: "streak_30", displayName: "Monthly Master", description: "Maintain a flawless 30-day streak", category: "streak", tier: "platinum", rewardKP: 500, unlockedAt: nil),
+            Achievement(id: 7, key: "zen_master", displayName: "Inner Peace", description: "Log 300 total minutes of mindfulness", category: "milestone", tier: "silver", rewardKP: 150, unlockedAt: nil),
+            Achievement(id: 8, key: "city_champion", displayName: "City Champion", description: "Reach Rank #1 on your city leaderboard", category: "competition", tier: "platinum", rewardKP: 1000, unlockedAt: nil)
         ]
     }
 }
