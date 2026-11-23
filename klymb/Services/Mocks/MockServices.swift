@@ -171,16 +171,23 @@ public final class MockLeaderboardService: LeaderboardServiceProtocol {
     public init() {}
 
     public func getLeaderboard(period: String, scope: String, limit: Int, offset: Int) async throws -> [LeaderboardEntry] {
+        let city = (scope == "city") ? "San Francisco" : "New York"
         return [
-            LeaderboardEntry(userId: UUID(), username: "speedy_runner", displayName: "Speedy", totalKP: 1840, rank: 1, cityRank: 1),
-            LeaderboardEntry(userId: UUID(), username: "iron_yogi", displayName: "Iron Yogi", totalKP: 1620, rank: 2, cityRank: 2),
-            LeaderboardEntry(userId: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, username: "champion_dev", displayName: "Champion Dev", totalKP: 1250, rank: 3, cityRank: 3, isCurrentUser: true),
-            LeaderboardEntry(userId: UUID(), username: "trail_blazer", displayName: "Trail Blazer", totalKP: 980, rank: 4, cityRank: 4)
+            LeaderboardEntry(userId: UUID(), username: "speedy_runner", displayName: "Speedy", avatarPreset: "sprinter", totalKP: 1840, rank: 1, cityRank: 1, isCurrentUser: false, rankChange: 2, cityName: city),
+            LeaderboardEntry(userId: UUID(), username: "iron_yogi", displayName: "Iron Yogi", avatarPreset: "zen", totalKP: 1620, rank: 2, cityRank: 2, isCurrentUser: false, rankChange: -1, cityName: city),
+            LeaderboardEntry(userId: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, username: "champion_dev", displayName: "Champion Dev", avatarPreset: "star", totalKP: 1250, rank: 3, cityRank: 3, isCurrentUser: true, rankChange: 1, cityName: city),
+            LeaderboardEntry(userId: UUID(), username: "trail_blazer", displayName: "Trail Blazer", avatarPreset: "climber", totalKP: 1120, rank: 4, cityRank: 4, isCurrentUser: false, rankChange: 3, cityName: "Austin"),
+            LeaderboardEntry(userId: UUID(), username: "cyclone_kai", displayName: "Kai C.", avatarPreset: "cyclist", totalKP: 980, rank: 5, cityRank: 5, isCurrentUser: false, rankChange: -2, cityName: "Seattle"),
+            LeaderboardEntry(userId: UUID(), username: "apex_maya", displayName: "Maya Apex", avatarPreset: "bolt", totalKP: 890, rank: 6, cityRank: 6, isCurrentUser: false, rankChange: 0, cityName: "London"),
+            LeaderboardEntry(userId: UUID(), username: "shield_sam", displayName: "Sam Titan", avatarPreset: "shield", totalKP: 810, rank: 7, cityRank: 7, isCurrentUser: false, rankChange: 1, cityName: "Berlin"),
+            LeaderboardEntry(userId: UUID(), username: "swift_claire", displayName: "Claire", avatarPreset: "runner", totalKP: 760, rank: 8, cityRank: 8, isCurrentUser: false, rankChange: -1, cityName: "Tokyo"),
+            LeaderboardEntry(userId: UUID(), username: "zen_marcus", displayName: "Marcus M.", avatarPreset: "zen", totalKP: 710, rank: 9, cityRank: 9, isCurrentUser: false, rankChange: 4, cityName: "Toronto"),
+            LeaderboardEntry(userId: UUID(), username: "pulse_leila", displayName: "Leila P.", avatarPreset: "sprinter", totalKP: 650, rank: 10, cityRank: 10, isCurrentUser: false, rankChange: 0, cityName: "Paris")
         ]
     }
 
     public func getMyRank(period: String, scope: String) async throws -> LeaderboardEntry? {
-        return LeaderboardEntry(userId: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, username: "champion_dev", displayName: "Champion Dev", totalKP: 1250, rank: 3, cityRank: 3, isCurrentUser: true)
+        return LeaderboardEntry(userId: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, username: "champion_dev", displayName: "Champion Dev", avatarPreset: "star", totalKP: 1250, rank: 3, cityRank: 3, isCurrentUser: true, rankChange: 1, cityName: "San Francisco")
     }
 }
 

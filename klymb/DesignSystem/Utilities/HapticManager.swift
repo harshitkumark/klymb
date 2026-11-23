@@ -89,4 +89,34 @@ public final class HapticManager {
     public func celebration() {
         rankUp()
     }
+
+    // MARK: - Static Convenience
+
+    public static func selection() {
+        shared.selection()
+    }
+
+    public static func celebration() {
+        shared.celebration()
+    }
+
+    public static func buttonTap() {
+        shared.buttonTap()
+    }
+
+    public static func kpEarned() {
+        shared.kpEarned()
+    }
+
+    public static func rankUp() {
+        shared.rankUp()
+    }
+
+    public static func rankDown() {
+        shared.rankDown()
+    }
+
+    public static func error() {
+        shared.error()
+    }
 }

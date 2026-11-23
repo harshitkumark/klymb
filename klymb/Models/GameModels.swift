@@ -79,6 +79,8 @@ public struct LeaderboardEntry: Identifiable, Codable, Equatable {
     public let rank: Int
     public let cityRank: Int?
     public let isCurrentUser: Bool
+    public var rankChange: Int
+    public var cityName: String?
 
     public init(
         userId: UUID,
@@ -88,7 +90,9 @@ public struct LeaderboardEntry: Identifiable, Codable, Equatable {
         totalKP: Int,
         rank: Int,
         cityRank: Int? = nil,
-        isCurrentUser: Bool = false
+        isCurrentUser: Bool = false,
+        rankChange: Int = 0,
+        cityName: String? = nil
     ) {
         self.userId = userId
         self.username = username
@@ -98,6 +102,8 @@ public struct LeaderboardEntry: Identifiable, Codable, Equatable {
         self.rank = rank
         self.cityRank = cityRank
         self.isCurrentUser = isCurrentUser
+        self.rankChange = rankChange
+        self.cityName = cityName
     }
 }
 

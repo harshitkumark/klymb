@@ -27,11 +27,7 @@ public struct MainTabView: View {
             }
             .tag(MainTab.log)
 
-            PlaceholderScreen(
-                title: "Compete",
-                subtitle: "City, Global & Friends Leaderboards",
-                icon: "trophy.fill"
-            )
+            CompeteView()
             .tabItem {
                 Label(MainTab.compete.title, systemImage: MainTab.compete.iconName)
             }
