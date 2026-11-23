@@ -60,7 +60,12 @@ public final class AppState: ObservableObject {
         do {
             if let profile = try await container.authService.getCurrentProfile() {
                 self.activeProfile = profile
-                self.sessionStatus = .authenticated(profile)
+                let needsOnboarding = profile.username.hasPrefix("user_") || profile.cityId == nil
+                if needsOnboarding {
+                    self.sessionStatus = .needsOnboarding(userId: profile.id)
+                } else {
+                    self.sessionStatus = .authenticated(profile)
+                }
             } else {
                 self.activeProfile = nil
                 self.sessionStatus = .unauthenticated

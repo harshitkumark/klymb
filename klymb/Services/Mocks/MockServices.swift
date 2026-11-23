@@ -57,21 +57,82 @@ public final class MockProfileService: ProfileServiceProtocol {
 
     public var streak: StreakInfo = StreakInfo(currentStreak: 7, longestStreak: 14, lastActiveDate: "2026-11-22", freezesRemaining: 2)
 
+    public var currentProfile: Profile? = Profile(
+        id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
+        username: "champion_dev",
+        displayName: "Champion Dev",
+        avatarPreset: "default",
+        cityId: 1,
+        cityName: "Bengaluru",
+        totalKP: 1250
+    )
+
     public init() {}
 
     public func setUsername(_ username: String) async throws -> String {
+        currentProfile?.username = username
         return username
     }
 
-    public func setCity(cityId: Int64) async throws {}
+    public func setCity(cityId: Int64) async throws {
+        currentProfile?.cityId = cityId
+        let cities = try await getCities()
+        if let city = cities.first(where: { $0.id == cityId }) {
+            currentProfile?.cityName = city.name
+        }
+    }
 
-    public func getCities() async throws -> [(id: Int64, name: String, state: String)] {
+    public func getCities() async throws -> [CityItem] {
         return [
-            (id: 1, name: "Mumbai", state: "Maharashtra"),
-            (id: 2, name: "Delhi", state: "Delhi"),
-            (id: 3, name: "Bengaluru", state: "Karnataka"),
-            (id: 4, name: "Hyderabad", state: "Telangana")
+            CityItem(id: 1, name: "Bengaluru", country: "India"),
+            CityItem(id: 2, name: "Mumbai", country: "India"),
+            CityItem(id: 3, name: "Delhi", country: "India"),
+            CityItem(id: 4, name: "Hyderabad", country: "India"),
+            CityItem(id: 5, name: "Chennai", country: "India"),
+            CityItem(id: 6, name: "Kolkata", country: "India"),
+            CityItem(id: 7, name: "Pune", country: "India"),
+            CityItem(id: 8, name: "Ahmedabad", country: "India"),
+            CityItem(id: 9, name: "Jaipur", country: "India"),
+            CityItem(id: 10, name: "Surat", country: "India"),
+            CityItem(id: 11, name: "Lucknow", country: "India"),
+            CityItem(id: 12, name: "Chandigarh", country: "India"),
+            CityItem(id: 13, name: "Kochi", country: "India"),
+            CityItem(id: 14, name: "Indore", country: "India"),
+            CityItem(id: 15, name: "Bhopal", country: "India"),
+            CityItem(id: 16, name: "Nagpur", country: "India"),
+            CityItem(id: 17, name: "Patna", country: "India"),
+            CityItem(id: 18, name: "Bhubaneswar", country: "India"),
+            CityItem(id: 19, name: "Coimbatore", country: "India"),
+            CityItem(id: 20, name: "Visakhapatnam", country: "India"),
+            CityItem(id: 21, name: "Gurugram", country: "India"),
+            CityItem(id: 22, name: "Noida", country: "India"),
+            CityItem(id: 23, name: "Singapore", country: "Singapore"),
+            CityItem(id: 24, name: "Dubai", country: "United Arab Emirates"),
+            CityItem(id: 25, name: "London", country: "United Kingdom"),
+            CityItem(id: 26, name: "New York", country: "United States"),
+            CityItem(id: 27, name: "San Francisco", country: "United States"),
+            CityItem(id: 28, name: "Tokyo", country: "Japan"),
+            CityItem(id: 29, name: "Sydney", country: "Australia"),
+            CityItem(id: 30, name: "Toronto", country: "Canada")
         ]
+    }
+
+    public func updateProfile(displayName: String?, avatarPreset: String?) async throws -> Profile {
+        if var profile = currentProfile {
+            if let displayName = displayName { profile.displayName = displayName }
+            if let avatarPreset = avatarPreset { profile.avatarPreset = avatarPreset }
+            profile.updatedAt = Date()
+            currentProfile = profile
+            return profile
+        }
+        let profile = Profile(
+            id: UUID(),
+            username: "champion_dev",
+            displayName: displayName,
+            avatarPreset: avatarPreset ?? "default"
+        )
+        currentProfile = profile
+        return profile
     }
 
     public func getHabits() async throws -> [Habit] {

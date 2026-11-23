@@ -121,3 +121,21 @@ public enum KlymbGradient {
         endPoint: .bottomTrailing
     )
 }
+
+// MARK: - Direct Token Aliases
+public enum ColorTokens {
+    public static let backgroundPrimary = Color.KlymbBackground.primary
+    public static let backgroundSecondary = Color.KlymbBackground.secondary
+    public static let backgroundTertiary = Color.KlymbBackground.tertiary
+    public static let textPrimary = Color.KlymbText.primary
+    public static let textSecondary = Color.KlymbText.secondary
+    public static let textTertiary = Color.KlymbText.tertiary
+    public static let borderDefault = Color.KlymbBorder.default
+    public static let borderSubtle = Color.KlymbBorder.subtle
+    public static let electricCyan = Color.KlymbAccent.primary
+    public static let neonPurple = Color.KlymbAccent.secondary
+    public static let neonGreen = Color.KlymbSemantic.success
+    public static let neonYellow = Color.KlymbSemantic.warning
+    public static let neonOrange = Color(hex: "FF6B00")
+    public static let neonRed = Color.KlymbSemantic.error
+}

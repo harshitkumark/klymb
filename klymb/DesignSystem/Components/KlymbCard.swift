@@ -22,6 +22,18 @@ public struct KlymbCard<Content: View>: View {
         self.content = content()
     }
 
+    public init(
+        glowColor: Color? = nil,
+        cornerRadius: CGFloat = KlymbRadius.xl,
+        padding: CGFloat = KlymbSpacing.lg,
+        isHighlighted: Bool = false,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.cornerRadius = cornerRadius
+        self.isHighlighted = isHighlighted || glowColor != nil
+        self.content = content()
+    }
+
     public var body: some View {
         content
             .padding(KlymbSpacing.lg)

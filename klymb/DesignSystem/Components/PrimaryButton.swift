@@ -29,6 +29,16 @@ public struct PrimaryButton: View {
         self.action = action
     }
 
+    public init(
+        title: String,
+        icon: String? = nil,
+        isLoading: Bool = false,
+        isEnabled: Bool = true,
+        action: @escaping () -> Void
+    ) {
+        self.init(title, icon: icon, isLoading: isLoading, isEnabled: isEnabled, action: action)
+    }
+
     public var body: some View {
         Button(action: {
             guard isEnabled && !isLoading else { return }
