@@ -8,25 +8,23 @@
 import Foundation
 
 public final class MockAuthService: AuthServiceProtocol {
-    public var currentUserId: UUID? = UUID(uuidString: "11111111-1111-1111-1111-111111111111")
-    public var isAuthenticated: Bool = true
-    public var mockProfile: Profile? = Profile(
-        id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
-        username: "champion_dev",
-        displayName: "Champion Dev",
-        avatarPreset: "default",
-        cityId: 1,
-        cityName: "Mumbai",
-        totalKP: 1250
-    )
+    public var currentUserId: UUID? = nil
+    public var isAuthenticated: Bool = false
+    public var mockProfile: Profile? = nil
 
-    public init(isAuthenticated: Bool = true) {
+    public init(isAuthenticated: Bool = false) {
         self.isAuthenticated = isAuthenticated
     }
 
     public func signInWithApple(idToken: String, nonce: String) async throws -> Profile {
         isAuthenticated = true
-        let profile = mockProfile ?? Profile(id: UUID(), username: "new_player")
+        let profile = Profile(
+            id: UUID(),
+            username: "user_\(Int.random(in: 100000...999999))",
+            displayName: nil,
+            avatarPreset: "default",
+            cityId: nil
+        )
         mockProfile = profile
         currentUserId = profile.id
         return profile

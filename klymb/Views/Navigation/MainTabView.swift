@@ -65,7 +65,8 @@ public struct MainTabView: View {
             }
             .tag(MainTab.profile)
         }
-        .tint(Color.accentColor)
+        .tint(ColorTokens.electricCyan)
+        .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
     }
 }
 
@@ -73,27 +74,59 @@ private struct PlaceholderScreen: View {
     let title: String
     let subtitle: String
     let icon: String
+    @EnvironmentObject private var appState: AppState
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                Image(systemName: icon)
-                    .font(.system(size: 56, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-                    .accessibilityHidden(true)
+            VStack(spacing: LayoutTokens.spacingM) {
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .fill(ColorTokens.backgroundSecondary)
+                        .frame(width: 90, height: 90)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 42, weight: .semibold))
+                        .foregroundStyle(ColorTokens.electricCyan)
+                        .accessibilityHidden(true)
+                }
 
                 Text(title)
-                    .font(.title2.bold())
+                    .font(TypographyTokens.title1)
+                    .foregroundStyle(ColorTokens.textPrimary)
                     .accessibilityAddTraits(.isHeader)
 
                 Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(TypographyTokens.subheadline)
+                    .foregroundStyle(ColorTokens.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                    .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                if title == "Profile" {
+                    Button(role: .destructive) {
+                        Task {
+                            await appState.signOut()
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                            Text("Sign Out (Test Welcome & Onboarding)")
+                        }
+                        .font(TypographyTokens.caption1.bold())
+                        .padding(.horizontal, LayoutTokens.paddingM)
+                        .padding(.vertical, LayoutTokens.paddingS)
+                        .background(ColorTokens.neonRed.opacity(0.15))
+                        .foregroundStyle(ColorTokens.neonRed)
+                        .clipShape(Capsule())
+                    }
+                    .padding(.top, LayoutTokens.spacingL)
+                }
+
+                Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemBackground))
+            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
             .navigationTitle(title)
         }
     }

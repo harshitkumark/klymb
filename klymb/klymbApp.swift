@@ -22,6 +22,7 @@ struct klymbApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
+                .preferredColorScheme(.dark)
         }
     }
 }
