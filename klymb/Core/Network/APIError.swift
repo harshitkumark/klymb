@@ -53,8 +53,16 @@ public enum APIError: LocalizedError, Equatable {
             return .duplicate("That username is already taken.")
         case "23514", "ERR_USERNAME_RESERVED":
             return .invalidInput("That username is reserved. Please choose another.")
-        case "ERR_RATE_LIMITED":
+        case "ERR_RATE_LIMITED", "over_email_send_rate_limit", "over_request_rate_limit", "429":
             return .rateLimited
+        case "user_already_exists", "email_exists":
+            return .duplicate("An account with this email already exists. Switch to Sign In instead.")
+        case "email_not_confirmed":
+            return .invalidInput("Please confirm your email via your inbox link, or turn off 'Confirm email' in Supabase Dashboard -> Authentication -> Providers -> Email.")
+        case "invalid_credentials":
+            return .invalidInput("Incorrect email or password.")
+        case "email_address_invalid", "weak_password", "signup_disabled", "validation_failed", "bad_json", "provider_disabled":
+            return .invalidInput(message ?? "Please check your sign-in details and try again.")
         case "P0002", "ERR_NOT_FOUND":
             return .notFound(message ?? "Resource")
         default:

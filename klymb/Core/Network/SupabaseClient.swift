@@ -47,6 +47,7 @@ private struct AuthTokenResponse: Decodable {
 
 private struct SupabaseErrorPayload: Decodable {
     let code: String?
+    let errorCode: String?
     let message: String?
     let msg: String?
     let error: String?
@@ -55,7 +56,25 @@ private struct SupabaseErrorPayload: Decodable {
 
     enum CodingKeys: String, CodingKey {
         case code, message, msg, error, hint
+        case errorCode = "error_code"
         case errorDescription = "error_description"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        if let strCode = try? c.decodeIfPresent(String.self, forKey: .code) {
+            self.code = strCode
+        } else if let intCode = try? c.decodeIfPresent(Int.self, forKey: .code) {
+            self.code = String(intCode)
+        } else {
+            self.code = nil
+        }
+        self.errorCode = try? c.decodeIfPresent(String.self, forKey: .errorCode)
+        self.message = try? c.decodeIfPresent(String.self, forKey: .message)
+        self.msg = try? c.decodeIfPresent(String.self, forKey: .msg)
+        self.error = try? c.decodeIfPresent(String.self, forKey: .error)
+        self.errorDescription = try? c.decodeIfPresent(String.self, forKey: .errorDescription)
+        self.hint = try? c.decodeIfPresent(String.self, forKey: .hint)
     }
 }
 
@@ -162,7 +181,7 @@ public actor SupabaseClient {
         guard let access = decoded.accessToken,
               let refresh = decoded.refreshToken,
               let user = decoded.user else {
-            throw APIError.invalidInput("Check your email to confirm signup, or try signing in.")
+            throw APIError.invalidInput("Account created! Check your email to confirm signup, or disable 'Confirm email' in Supabase Dashboard -> Authentication -> Providers -> Email for dev testing.")
         }
 
         let expiry: Date
@@ -339,9 +358,15 @@ public actor SupabaseClient {
     }
 
     private func mapError(data: Data, statusCode: Int) -> APIError {
+        #if DEBUG
+        if let rawBody = String(data: data, encoding: .utf8), !rawBody.isEmpty {
+            print("[SupabaseClient] HTTP \(statusCode) error: \(rawBody)")
+        }
+        #endif
+
         if let payload = try? Self.decoder.decode(SupabaseErrorPayload.self, from: data) {
-            let msg = payload.message ?? payload.errorDescription ?? payload.msg ?? payload.error ?? "Request failed (\(statusCode))"
-            let code = payload.code ?? payload.error ?? "\(statusCode)"
+            let msg = payload.msg ?? payload.message ?? payload.errorDescription ?? payload.error ?? "Request failed (\(statusCode))"
+            let code = payload.errorCode ?? payload.code ?? payload.error ?? "\(statusCode)"
 
             // Match our Postgres custom exception codes (e.g. ERR_USERNAME_TAKEN)
             if msg.contains("ERR_") {
@@ -354,6 +379,9 @@ public actor SupabaseClient {
         }
         if statusCode == 401 {
             return .unauthorized
+        }
+        if statusCode == 429 {
+            return .rateLimited
         }
         return .serverError("Server returned status \(statusCode)")
     }

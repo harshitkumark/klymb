@@ -60,11 +60,29 @@ public final class AuthViewModel: ObservableObject {
         }
     }
 
-    /// Development sign-in / sign-up via Supabase Email Auth for Simulator testing
-    public func devSignInWithEmail(email: String, password: String, isSignUp: Bool, appState: AppState) {
-        Task {
-            await processEmailSignIn(email: email, password: password, isSignUp: isSignUp, appState: appState)
+    /// Email + password sign-in / sign-up via Supabase Auth
+    public func submitEmailAuth(email: String, password: String, isSignUp: Bool, appState: AppState) {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedEmail.isEmpty, trimmedEmail.contains("@") else {
+            self.errorMessage = "Please enter a valid email address."
+            self.showError = true
+            HapticManager.shared.error()
+            return
         }
+        guard password.count >= 6 else {
+            self.errorMessage = "Password must be at least 6 characters."
+            self.showError = true
+            HapticManager.shared.error()
+            return
+        }
+        Task {
+            await processEmailSignIn(email: trimmedEmail, password: password, isSignUp: isSignUp, appState: appState)
+        }
+    }
+
+    /// Backwards-compatible alias for email auth
+    public func devSignInWithEmail(email: String, password: String, isSignUp: Bool, appState: AppState) {
+        submitEmailAuth(email: email, password: password, isSignUp: isSignUp, appState: appState)
     }
 
     /// Fallback dev bypass for unit tests / mock container
