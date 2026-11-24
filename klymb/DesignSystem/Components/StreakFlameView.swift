@@ -12,8 +12,6 @@ public struct StreakFlameView: View {
     public let streakDays: Int
     public let isAtRisk: Bool
 
-    @State private var isFlickering = false
-
     public init(streakDays: Int, isAtRisk: Bool = false) {
         self.streakDays = streakDays
         self.isAtRisk = isAtRisk
@@ -22,19 +20,19 @@ public struct StreakFlameView: View {
     public var body: some View {
         HStack(spacing: KlymbSpacing.xs) {
             Image(systemName: "flame.fill")
-                .font(.system(size: 20, weight: .bold))
+                .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(isAtRisk ? AnyShapeStyle(Color.KlymbSemantic.warning) : AnyShapeStyle(KlymbGradient.fire))
-                .scaleEffect(isFlickering ? 1.06 : 1.0)
-                .animation(
-                    UIAccessibility.isReduceMotionEnabled
-                        ? nil
-                        : .easeInOut(duration: 1.2).repeatForever(autoreverses: true),
-                    value: isFlickering
+                .frame(width: 20, height: 22)
+                .symbolEffect(
+                    .pulse,
+                    options: .repeating,
+                    isActive: !UIAccessibility.isReduceMotionEnabled
                 )
 
             Text("\(streakDays)")
                 .font(Font.Klymb.headline)
                 .foregroundStyle(Color.KlymbText.primary)
+                .monospacedDigit()
         }
         .padding(.horizontal, KlymbSpacing.md)
         .padding(.vertical, KlymbSpacing.xs)
@@ -46,11 +44,7 @@ public struct StreakFlameView: View {
             Capsule()
                 .stroke(isAtRisk ? Color.KlymbSemantic.warning : Color(hex: "FF6B00").opacity(0.4), lineWidth: 1)
         )
-        .onAppear {
-            if !UIAccessibility.isReduceMotionEnabled {
-                isFlickering = true
-            }
-        }
+        .fixedSize()
         .accessibilityLabel("\(streakDays) day streak")
     }
 }

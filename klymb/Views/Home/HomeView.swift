@@ -105,14 +105,17 @@ private struct HomeTopBar: View {
                         .fontWeight(.bold)
                         .foregroundStyle(ColorTokens.electricCyan)
                         .tracking(1)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
 
                     Text("Let's climb today.")
                         .font(TypographyTokens.headline)
                         .foregroundStyle(ColorTokens.textPrimary)
+                        .lineLimit(1)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: LayoutTokens.spacingS)
 
             // Streak Flame Badge
             StreakFlameView(streakDays: viewModel.streak.currentStreak)
