@@ -13,6 +13,8 @@ public protocol AuthServiceProtocol: AnyObject {
     var isAuthenticated: Bool { get }
 
     func signInWithApple(idToken: String, nonce: String) async throws -> Profile
+    func signInWithEmail(email: String, password: String) async throws -> Profile
+    func signUpWithEmail(email: String, password: String) async throws -> Profile
     func signOut() async throws
     func getCurrentProfile() async throws -> Profile?
 }
@@ -37,6 +39,7 @@ public protocol ProfileServiceProtocol: AnyObject {
     func getHabits() async throws -> [Habit]
     func setUserHabits(habitIds: [Int64]) async throws
     func getUserHabits() async throws -> [Habit]
+    func getTodayHabitProgress() async throws -> TodayHabitProgressResponse
     func updateProfile(displayName: String?, avatarPreset: String?) async throws -> Profile
     func getStreak() async throws -> StreakInfo
     func getCityCooldown() async throws -> CityChangeCooldown
@@ -52,9 +55,24 @@ public protocol ActivityServiceProtocol: AnyObject {
 }
 
 // MARK: - Leaderboard Service Protocol
+public struct MyRankSummary: Codable, Equatable, Sendable {
+    public let rank: Int?
+    public let kp: Int
+    public let nextUsername: String?
+    public let kpToOvertake: Int
+
+    public init(rank: Int? = nil, kp: Int = 0, nextUsername: String? = nil, kpToOvertake: Int = 0) {
+        self.rank = rank
+        self.kp = kp
+        self.nextUsername = nextUsername
+        self.kpToOvertake = kpToOvertake
+    }
+}
+
 public protocol LeaderboardServiceProtocol: AnyObject {
     func getLeaderboard(period: String, scope: String, limit: Int, offset: Int) async throws -> [LeaderboardEntry]
     func getMyRank(period: String, scope: String) async throws -> LeaderboardEntry?
+    func getMyRankSummary(period: String, scope: String) async throws -> MyRankSummary
 }
 
 // MARK: - Challenge Service Protocol

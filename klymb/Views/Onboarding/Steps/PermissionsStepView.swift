@@ -71,8 +71,9 @@ public struct PermissionsStepView: View {
                             .foregroundStyle(ColorTokens.textSecondary)
 
                         Button {
-                            HapticManager.shared.buttonTap()
-                            viewModel.healthKitRequested = true
+                            Task {
+                                await viewModel.requestHealthKitPermission()
+                            }
                         } label: {
                             HStack {
                                 Text(viewModel.healthKitRequested ? "HealthKit Connected" : "Connect Apple Health")
@@ -130,8 +131,9 @@ public struct PermissionsStepView: View {
                             .foregroundStyle(ColorTokens.textSecondary)
 
                         Button {
-                            HapticManager.shared.buttonTap()
-                            viewModel.notificationsRequested = true
+                            Task {
+                                await viewModel.requestNotificationPermission()
+                            }
                         } label: {
                             HStack {
                                 Text(viewModel.notificationsRequested ? "Alerts Enabled" : "Enable Competition Alerts")

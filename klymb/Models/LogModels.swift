@@ -77,21 +77,22 @@ public enum ManualLogType: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Provides UX estimate labeled as non-authoritative (Rule 2 & 3)
+    /// Provides UX estimate labeled as non-authoritative (Rule 2 & 3).
+    /// Matches backend KP_RULES.md manual multiplier (0.5x) & per-habit manual caps.
     public func estimateKP(for quantity: Double) -> Int {
         switch self {
         case .hydration:
-            // ~1 KP per 250ml up to daily manual cap
-            let calculated = Int(quantity / 250.0)
-            return min(manualDailyKPCap, calculated)
+            // floor(ml / 250) * 5 * 0.5x manual multiplier
+            let raw = floor(quantity / 250.0) * 5.0
+            return min(manualDailyKPCap, Int(floor(raw * 0.5)))
         case .workout:
-            // ~0.8 KP per minute up to daily manual cap
-            let calculated = Int(quantity * 0.8)
-            return min(manualDailyKPCap, calculated)
+            // floor(min * 2) * 0.5x manual multiplier
+            let raw = floor(quantity * 2.0)
+            return min(manualDailyKPCap, Int(floor(raw * 0.5)))
         case .mindfulness:
-            // ~0.75 KP per minute up to daily manual cap
-            let calculated = Int(quantity * 0.75)
-            return min(manualDailyKPCap, calculated)
+            // floor(min * 3) * 0.5x manual multiplier
+            let raw = floor(quantity * 3.0)
+            return min(manualDailyKPCap, Int(floor(raw * 0.5)))
         }
     }
 }

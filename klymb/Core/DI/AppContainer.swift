@@ -65,20 +65,31 @@ public final class AppContainer: AppContainerProtocol {
         AppContainer()
     }
 
-    /// Production container wired with real device services
+    /// Production container wired with live Supabase backend & real HealthKit services
+    @MainActor
     public static var live: AppContainer {
+        let client = SupabaseClient.shared
+        let auth = SupabaseAuthService(client: client)
+        let profile = SupabaseProfileService(client: client)
+        let activity = SupabaseActivityService(client: client)
         let healthKit = HealthKitService()
-        let profile = MockProfileService()
-        let activity = MockActivityService()
+        let sync = ActivitySyncService(
+            healthKitService: healthKit,
+            activityService: activity,
+            profileService: profile
+        )
         return AppContainer(
+            authService: auth,
             profileService: profile,
             healthKitService: healthKit,
-            syncService: ActivitySyncService(
-                healthKitService: healthKit,
-                activityService: activity,
-                profileService: profile
-            ),
-            activityService: activity
+            syncService: sync,
+            activityService: activity,
+            leaderboardService: SupabaseLeaderboardService(client: client),
+            challengeService: SupabaseChallengeService(client: client),
+            achievementService: SupabaseAchievementService(client: client),
+            socialService: SupabaseSocialService(client: client),
+            notificationService: SupabaseNotificationService(client: client),
+            analyticsService: MockAnalyticsService()
         )
     }
 }

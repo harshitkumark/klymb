@@ -99,6 +99,8 @@ public final class OnboardingViewModel: ObservableObject {
     // MARK: - Dependencies
     private let profileService: ProfileServiceProtocol
     private let authService: AuthServiceProtocol
+    private let healthKitService: HealthKitServiceProtocol
+    private let syncService: SyncServiceProtocol
 
     private let reservedUsernames: Set<String> = [
         "admin", "administrator", "klymb", "support", "help",
@@ -109,6 +111,8 @@ public final class OnboardingViewModel: ObservableObject {
     public init(container: AppContainerProtocol = AppContainer.mock) {
         self.profileService = container.profileService
         self.authService = container.authService
+        self.healthKitService = container.healthKitService
+        self.syncService = container.syncService
         loadInitialData()
     }
 
@@ -247,6 +251,26 @@ public final class OnboardingViewModel: ObservableObject {
         }
     }
 
+    public func requestHealthKitPermission() async {
+        HapticManager.shared.buttonTap()
+        let selectedKeys = habits.filter { selectedHabitIds.contains($0.id) }.map { $0.key }
+        let keysToRequest = selectedKeys.isEmpty ? ["steps", "running", "workout", "hydration", "sleep", "mindfulness"] : selectedKeys
+        do {
+            _ = try await healthKitService.requestAuthorization(habitKeys: keysToRequest)
+            self.healthKitRequested = true
+            await syncService.startBackgroundObservers()
+        } catch {
+            // Still let user continue onboarding even if HealthKit unavailable in simulator
+            self.healthKitRequested = true
+        }
+    }
+
+    public func requestNotificationPermission() async {
+        HapticManager.shared.buttonTap()
+        _ = await NotificationManager.shared.requestAuthorization()
+        self.notificationsRequested = true
+    }
+
     // MARK: - Final Submission
     public func completeOnboarding(appState: AppState) async {
         guard !isSubmitting else { return }
@@ -278,7 +302,12 @@ public final class OnboardingViewModel: ObservableObject {
 
             HapticManager.shared.celebration()
 
-            // 5. Transition to authenticated state
+            // 5. Kick off initial HealthKit sync in background
+            Task {
+                _ = try? await syncService.syncAllHabits()
+            }
+
+            // 6. Transition to authenticated state
             appState.activeProfile = updatedProfile
             appState.sessionStatus = .authenticated(updatedProfile)
         } catch let error as APIError {

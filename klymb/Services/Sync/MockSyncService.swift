@@ -54,4 +54,6 @@ public final class MockSyncService: SyncServiceProtocol {
         self.syncStatus = .success(lastSyncedAt: completedDate, summary: simulatedSummary)
         return simulatedSummary
     }
+
+    public func startBackgroundObservers() async {}
 }

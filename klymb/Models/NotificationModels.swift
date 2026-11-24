@@ -12,6 +12,12 @@ public struct NotificationPreferences: Codable, Equatable {
     public var challengeEnding: Bool
     public var streakRisk: Bool
 
+    enum CodingKeys: String, CodingKey {
+        case overtaken
+        case challengeEnding = "challenge_ending"
+        case streakRisk = "streak_risk"
+    }
+
     public init(
         overtaken: Bool = true,
         challengeEnding: Bool = true,
@@ -24,20 +30,23 @@ public struct NotificationPreferences: Codable, Equatable {
 }
 
 public enum NotificationType: String, Codable {
-    case overtake = "overtake"
+    case overtaken = "overtaken"
+    case overtake = "overtake" // legacy alias for simulated alert compatibility
     case streakRisk = "streak_risk"
     case challengeEnding = "challenge_ending"
     case achievement = "achievement"
+    case friendRequest = "friend_request"
+    case teamInvite = "team_invite"
     case cheer = "cheer"
     case general = "general"
 
     public var targetTab: MainTab {
         switch self {
-        case .overtake: return .compete
+        case .overtaken, .overtake: return .compete
         case .streakRisk: return .home
         case .challengeEnding: return .challenges
         case .achievement: return .profile
-        case .cheer: return .compete
+        case .friendRequest, .teamInvite, .cheer: return .compete
         case .general: return .home
         }
     }

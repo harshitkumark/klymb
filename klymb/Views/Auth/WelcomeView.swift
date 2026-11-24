@@ -12,9 +12,17 @@ import AuthenticationServices
 public struct WelcomeView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: AuthViewModel
+    @State private var showDevAuthSheet: Bool = false
+    @State private var devEmail: String = ""
+    @State private var devPassword: String = ""
+    @State private var devIsSignUp: Bool = false
 
-    public init(viewModel: AuthViewModel? = nil) {
-        self._viewModel = StateObject(wrappedValue: viewModel ?? AuthViewModel())
+    public init(container: AppContainerProtocol = AppContainer.mock) {
+        self._viewModel = StateObject(wrappedValue: AuthViewModel(container: container))
+    }
+
+    public init(viewModel: AuthViewModel) {
+        self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
     public var body: some View {
@@ -88,12 +96,12 @@ public struct WelcomeView: View {
                         .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg))
                         .shadow(color: Color.white.opacity(0.15), radius: 8)
 
-                        // Simulator / Dev bypass option
+                        // Simulator / Dev email auth against real Supabase
                         #if DEBUG
                         Button(action: {
-                            viewModel.devBypassSignIn(appState: appState)
+                            showDevAuthSheet = true
                         }) {
-                            Text("Dev Quick Sign In")
+                            Text("Dev Email Sign In (Simulator)")
                                 .font(Font.Klymb.caption)
                                 .foregroundStyle(Color.KlymbText.tertiary)
                         }
@@ -114,6 +122,39 @@ public struct WelcomeView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $showDevAuthSheet) {
+            NavigationStack {
+                Form {
+                    Section("Supabase Email Auth (DEBUG)") {
+                        TextField("Email", text: $devEmail)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            .autocorrectionDisabled()
+                        SecureField("Password (min 6 chars)", text: $devPassword)
+                        Toggle("Create New Account", isOn: $devIsSignUp)
+                    }
+                    Section {
+                        Button(devIsSignUp ? "Sign Up & Save to Supabase" : "Sign In") {
+                            showDevAuthSheet = false
+                            viewModel.devSignInWithEmail(
+                                email: devEmail.trimmingCharacters(in: .whitespacesAndNewlines),
+                                password: devPassword,
+                                isSignUp: devIsSignUp,
+                                appState: appState
+                            )
+                        }
+                        .disabled(devEmail.trimmingCharacters(in: .whitespaces).isEmpty || devPassword.count < 6)
+                    }
+                }
+                .navigationTitle("Dev Sign In")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { showDevAuthSheet = false }
+                    }
+                }
+            }
+        }
         .alert("Sign In Failed", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) {}
         } message: {

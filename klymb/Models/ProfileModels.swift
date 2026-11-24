@@ -92,18 +92,23 @@ public extension Achievement {
     var iconName: String {
         switch key {
         case "first_steps": return "shoeprints.fill"
-        case "streak_7", "streak_30": return "flame.fill"
+        case "week_warrior", "month_master", "streak_7", "streak_30": return "flame.fill"
+        case "century_club": return "crown.fill"
+        case "step_legend": return "figure.walk"
         case "century_run", "marathoner": return "figure.run"
         case "hydro_pro": return "drop.fill"
         case "zen_master": return "sparkles"
-        case "podium_finish", "first_place": return "trophy.fill"
-        case "city_champion": return "crown.fill"
+        case "podium_finish", "first_place", "challenge_champion": return "trophy.fill"
+        case "city_star", "city_champion": return "star.fill"
+        case "social_butterfly": return "person.3.fill"
         case "century_ride": return "figure.outdoor.cycle"
         default:
             switch category.lowercased() {
             case "streak": return "flame.fill"
-            case "distance": return "arrow.forward.to.line"
-            case "competition": return "trophy.fill"
+            case "distance", "habit": return "figure.walk"
+            case "competition", "challenge": return "trophy.fill"
+            case "leaderboard": return "star.fill"
+            case "social": return "person.3.fill"
             default: return "star.fill"
             }
         }

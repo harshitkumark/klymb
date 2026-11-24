@@ -24,6 +24,17 @@ public struct FriendItem: Identifiable, Codable, Equatable {
     public var status: FriendshipStatus
     public let streak: Int
 
+    enum CodingKeys: String, CodingKey {
+        case id
+        case username
+        case displayName = "display_name"
+        case avatarPreset = "avatar_preset"
+        case cityName = "city_name"
+        case totalKP = "total_kp"
+        case status
+        case streak
+    }
+
     public init(
         id: UUID,
         username: String,
@@ -42,6 +53,18 @@ public struct FriendItem: Identifiable, Codable, Equatable {
         self.totalKP = totalKP
         self.status = status
         self.streak = streak
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(UUID.self, forKey: .id)
+        self.username = try c.decode(String.self, forKey: .username)
+        self.displayName = try c.decodeIfPresent(String.self, forKey: .displayName)
+        self.avatarPreset = try c.decodeIfPresent(String.self, forKey: .avatarPreset) ?? "default"
+        self.cityName = try c.decodeIfPresent(String.self, forKey: .cityName)
+        self.totalKP = try c.decodeIfPresent(Int.self, forKey: .totalKP) ?? 0
+        self.status = try c.decodeIfPresent(FriendshipStatus.self, forKey: .status) ?? .none
+        self.streak = try c.decodeIfPresent(Int.self, forKey: .streak) ?? 0
     }
 
     public var titleDisplay: String {

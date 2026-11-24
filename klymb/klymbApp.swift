@@ -33,7 +33,7 @@ struct klymbApp: App {
     private let container: AppContainer
 
     init() {
-        let container = AppContainer()
+        let container = AppContainer.live
         let state = AppState(container: container)
         self.container = container
         self._appState = StateObject(wrappedValue: state)
@@ -48,10 +48,9 @@ struct klymbApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(container: container)
                 .environmentObject(appState)
                 .preferredColorScheme(.dark)
         }
     }
 }
-

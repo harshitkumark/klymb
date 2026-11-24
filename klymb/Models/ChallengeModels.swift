@@ -48,9 +48,9 @@ public extension Challenge {
         switch habitKey {
         case "steps": return "figure.walk"
         case "running": return "figure.run"
-        case "cycling": return "figure.outdoor.cycle"
-        case "swimming": return "figure.pool.swim"
-        case "water": return "drop.fill"
+        case "walking_distance": return "figure.walk.motion"
+        case "workout": return "dumbbell.fill"
+        case "hydration", "water": return "drop.fill"
         case "mindfulness": return "sparkles"
         case "sleep": return "bed.double.fill"
         default: return "flag.fill"
@@ -70,12 +70,14 @@ public extension Challenge {
         switch habitKey {
         case "steps":
             return "\(Int(target).formatted()) steps"
-        case "running", "cycling", "swimming":
+        case "running", "walking_distance":
             return target.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(target)) km" : String(format: "%.1f km", target)
-        case "water":
+        case "hydration", "water":
             return "\(Int(target).formatted()) ml"
-        case "mindfulness":
+        case "mindfulness", "workout":
             return "\(Int(target)) min"
+        case "sleep":
+            return String(format: "%.1f hrs", target)
         default:
             return "\(Int(target)) units"
         }
@@ -85,12 +87,14 @@ public extension Challenge {
         switch habitKey {
         case "steps":
             return "\(Int(progress).formatted())"
-        case "running", "cycling", "swimming":
+        case "running", "walking_distance":
             return progress.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(progress))" : String(format: "%.1f", progress)
-        case "water":
+        case "hydration", "water":
             return "\(Int(progress).formatted())"
-        case "mindfulness":
+        case "mindfulness", "workout":
             return "\(Int(progress))"
+        case "sleep":
+            return String(format: "%.1f", progress)
         default:
             return "\(Int(progress))"
         }

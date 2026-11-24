@@ -34,7 +34,7 @@ public enum LeaderboardScope: String, CaseIterable, Identifiable {
 public enum LeaderboardPeriod: String, CaseIterable, Identifiable {
     case daily = "daily"
     case weekly = "weekly"
-    case allTime = "all_time"
+    case allTime = "alltime"
 
     public var id: String { rawValue }
 

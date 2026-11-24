@@ -35,7 +35,7 @@ public struct RuleComplianceTests {
 
             // 2. Verify ManualLogType estimates are labeled as preview estimates only
             let waterPreview = ManualLogType.hydration.estimateKP(for: 500)
-            try KlymbAssert.assertEqual(waterPreview, 2)
+            try KlymbAssert.assertEqual(waterPreview, 5)
 
             let workoutPreview = ManualLogType.workout.estimateKP(for: 60)
             try KlymbAssert.assertEqual(workoutPreview, 40) // capped at manual max 40

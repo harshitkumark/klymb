@@ -14,8 +14,10 @@ public struct CompeteView: View {
     @StateObject private var viewModel: CompeteViewModel
     @State private var showFriendsSheet: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let container: AppContainerProtocol
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
+        self.container = container
         _viewModel = StateObject(wrappedValue: CompeteViewModel(container: container))
     }
 
@@ -142,14 +144,22 @@ public struct CompeteView: View {
                 }
             }
             .sheet(item: $viewModel.selectedAthlete) { athlete in
-                AthleteProfileSheet(athlete: athlete) {
-                    viewModel.dismissAthleteProfile()
-                }
+                AthleteProfileSheet(
+                    athlete: athlete,
+                    onCheer: {
+                        Task {
+                            try? await container.socialService.cheerFriend(targetUserId: athlete.userId)
+                        }
+                    },
+                    onClose: {
+                        viewModel.dismissAthleteProfile()
+                    }
+                )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showFriendsSheet) {
-                FriendsView()
+                FriendsView(container: container)
             }
         }
     }
@@ -625,6 +635,7 @@ private struct RankChangeBadge: View {
 // MARK: - Athlete Public Profile Sheet
 private struct AthleteProfileSheet: View {
     let athlete: LeaderboardEntry
+    let onCheer: () -> Void
     let onClose: () -> Void
 
     var body: some View {
@@ -715,6 +726,9 @@ private struct AthleteProfileSheet: View {
                     athlete.isCurrentUser ? "Done" : "Cheer Athlete",
                     icon: athlete.isCurrentUser ? "checkmark" : "hands.clap.fill",
                     action: {
+                        if !athlete.isCurrentUser {
+                            onCheer()
+                        }
                         HapticManager.celebration()
                         onClose()
                     }

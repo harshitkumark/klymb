@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SUPABASE_URL</key>
+	<string>$(SUPABASE_URL)</string>
+	<key>SUPABASE_ANON_KEY</key>
+	<string>$(SUPABASE_ANON_KEY)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Klymb reads your steps, running/walking distance, workouts, sleep, hydration, and mindfulness sessions from Apple Health to award verified Klymb Points on leaderboards.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Klymb does not write health metrics without your explicit permission.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+</dict>
+</plist>

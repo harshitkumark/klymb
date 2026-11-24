@@ -1,0 +1,5 @@
+// Shared Xcode build configuration (tracked in git — NO secrets here)
+SUPABASE_URL = http:/$()/127.0.0.1:54321
+SUPABASE_ANON_KEY = dummy
+
+#include? "Staging.xcconfig"

@@ -12,7 +12,7 @@ import Combine
 @MainActor
 public final class ProfileViewModel: ObservableObject {
     @Published public var profile: Profile?
-    @Published public var streak: StreakInfo = StreakInfo(currentStreak: 7, longestStreak: 14)
+    @Published public var streak: StreakInfo = StreakInfo(currentStreak: 0, longestStreak: 0)
     @Published public var achievements: [Achievement] = []
     @Published public var userHabits: [Habit] = []
     @Published public var selectedFilter: AchievementCategoryFilter = .all
@@ -43,7 +43,7 @@ public final class ProfileViewModel: ObservableObject {
     // MARK: - Computed Properties
 
     public var totalKP: Int {
-        profile?.totalKP ?? 1250
+        profile?.totalKP ?? 0
     }
 
     public var rankTier: RankTier {

@@ -15,8 +15,10 @@ public struct ProfileView: View {
     @State private var showNotificationPreferences: Bool = false
     @State private var showSettings: Bool = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let container: AppContainerProtocol
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
+        self.container = container
         _viewModel = StateObject(wrappedValue: ProfileViewModel(container: container))
     }
 
@@ -99,7 +101,7 @@ public struct ProfileView: View {
                 NotificationPreferencesView()
             }
             .sheet(isPresented: $showSettings) {
-                SettingsView()
+                SettingsView(container: container)
             }
         }
     }
@@ -137,11 +139,11 @@ private struct ProfileHeroCard: View {
 
             // Names & City
             VStack(spacing: 4) {
-                Text(viewModel.profile?.displayName ?? "Champion Dev")
+                Text(viewModel.profile?.displayName ?? viewModel.profile?.title ?? "Athlete")
                     .font(TypographyTokens.title2)
                     .foregroundStyle(ColorTokens.textPrimary)
 
-                Text("@\(viewModel.profile?.username ?? "champion_dev")")
+                Text("@\(viewModel.profile?.username ?? "athlete")")
                     .font(TypographyTokens.subheadline)
                     .foregroundStyle(ColorTokens.textTertiary)
 
@@ -595,7 +597,7 @@ private struct ProfileAccountSection: View {
             }
             .buttonStyle(.plain)
 
-            Text("Klymb iOS • v1.0.0 (Build 42)")
+            Text("Klymb iOS • v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0") (Build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
                 .font(TypographyTokens.caption2)
                 .foregroundStyle(ColorTokens.textTertiary)
         }

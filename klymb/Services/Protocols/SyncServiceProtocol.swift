@@ -75,4 +75,7 @@ public protocol SyncServiceProtocol: AnyObject {
 
     /// Flushes any pending items in the local queue to the backend RPC
     func flushPendingQueue() async throws -> SyncSummary
+
+    /// Starts HealthKit background observer queries for active habits
+    func startBackgroundObservers() async
 }

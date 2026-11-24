@@ -30,6 +30,14 @@ public final class MockAuthService: AuthServiceProtocol {
         return profile
     }
 
+    public func signInWithEmail(email: String, password: String) async throws -> Profile {
+        try await signInWithApple(idToken: email, nonce: password)
+    }
+
+    public func signUpWithEmail(email: String, password: String) async throws -> Profile {
+        try await signInWithApple(idToken: email, nonce: password)
+    }
+
     public func signOut() async throws {
         isAuthenticated = false
         currentUserId = nil
@@ -154,6 +162,25 @@ public final class MockProfileService: ProfileServiceProtocol {
         return habits.filter { $0.isSelected }
     }
 
+    public func getTodayHabitProgress() async throws -> TodayHabitProgressResponse {
+        let items = habits.filter { $0.isSelected }.map { h in
+            TodayHabitProgressItem(
+                habitId: h.id,
+                key: h.key,
+                displayName: h.displayName,
+                unit: h.unit,
+                dailyKPCap: h.dailyKPCap,
+                currentQuantity: h.key == "steps" ? 8432 : (h.key == "running" ? 3.2 : 35),
+                kpEarnedToday: h.key == "steps" ? 80 : (h.key == "running" ? 64 : 40)
+            )
+        }
+        return TodayHabitProgressResponse(
+            dayLocal: "2026-11-25",
+            todayKP: items.reduce(0) { $0 + $1.kpEarnedToday },
+            habits: items
+        )
+    }
+
     public func getStreak() async throws -> StreakInfo {
         return streak
     }
@@ -234,6 +261,10 @@ public final class MockLeaderboardService: LeaderboardServiceProtocol {
 
     public func getMyRank(period: String, scope: String) async throws -> LeaderboardEntry? {
         return LeaderboardEntry(userId: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!, username: "champion_dev", displayName: "Champion Dev", avatarPreset: "star", totalKP: 1250, rank: 3, cityRank: 3, isCurrentUser: true, rankChange: 1, cityName: "San Francisco")
+    }
+
+    public func getMyRankSummary(period: String, scope: String) async throws -> MyRankSummary {
+        return MyRankSummary(rank: 12, kp: 185, nextUsername: "ravi", kpToOvertake: 142)
     }
 }
 

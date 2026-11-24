@@ -11,8 +11,11 @@ public struct RootView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var versionInfo = AppVersionInfo()
+    private let container: AppContainerProtocol
 
-    public init() {}
+    public init(container: AppContainerProtocol = AppContainer.mock) {
+        self.container = container
+    }
 
     public var body: some View {
         ZStack(alignment: .top) {
@@ -26,11 +29,11 @@ public struct RootView: View {
                     case .loading:
                         LoadingView()
                     case .unauthenticated:
-                        WelcomeView()
+                        WelcomeView(container: container)
                     case .needsOnboarding:
-                        OnboardingContainerView()
+                        OnboardingContainerView(container: container)
                     case .authenticated:
-                        MainTabView()
+                        MainTabView(container: container)
                     }
                 }
 

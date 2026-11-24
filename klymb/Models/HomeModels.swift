@@ -8,6 +8,44 @@
 
 import Foundation
 
+public struct TodayHabitProgressItem: Codable, Equatable {
+    public let habitId: Int64
+    public let key: String
+    public let displayName: String
+    public let unit: String
+    public let dailyKPCap: Int
+    public let currentQuantity: Double
+    public let kpEarnedToday: Int
+
+    enum CodingKeys: String, CodingKey {
+        case habitId = "habit_id"
+        case key
+        case displayName = "display_name"
+        case unit
+        case dailyKPCap = "daily_kp_cap"
+        case currentQuantity = "current_quantity"
+        case kpEarnedToday = "kp_earned_today"
+    }
+}
+
+public struct TodayHabitProgressResponse: Codable, Equatable {
+    public let dayLocal: String
+    public let todayKP: Int
+    public let habits: [TodayHabitProgressItem]
+
+    enum CodingKeys: String, CodingKey {
+        case dayLocal = "day_local"
+        case todayKP = "today_kp"
+        case habits
+    }
+
+    public init(dayLocal: String = "", todayKP: Int = 0, habits: [TodayHabitProgressItem] = []) {
+        self.dayLocal = dayLocal
+        self.todayKP = todayKP
+        self.habits = habits
+    }
+}
+
 public struct DailyHabitProgress: Identifiable, Equatable {
     public let id: Int64
     public let key: String

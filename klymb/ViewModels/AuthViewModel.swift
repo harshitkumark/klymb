@@ -60,10 +60,41 @@ public final class AuthViewModel: ObservableObject {
         }
     }
 
-    /// Development bypass for simulator/preview testing
+    /// Development sign-in / sign-up via Supabase Email Auth for Simulator testing
+    public func devSignInWithEmail(email: String, password: String, isSignUp: Bool, appState: AppState) {
+        Task {
+            await processEmailSignIn(email: email, password: password, isSignUp: isSignUp, appState: appState)
+        }
+    }
+
+    /// Fallback dev bypass for unit tests / mock container
     public func devBypassSignIn(appState: AppState) {
         Task {
             await processSignIn(idToken: "mock_id_token", nonce: "mock_nonce", appState: appState)
+        }
+    }
+
+    private func processEmailSignIn(email: String, password: String, isSignUp: Bool, appState: AppState) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let profile: Profile
+            if isSignUp {
+                profile = try await authService.signUpWithEmail(email: email, password: password)
+            } else {
+                profile = try await authService.signInWithEmail(email: email, password: password)
+            }
+            HapticManager.shared.buttonTap()
+            routeAfterSignIn(profile: profile, appState: appState)
+        } catch let error as APIError {
+            self.errorMessage = error.localizedDescription
+            self.showError = true
+            HapticManager.shared.error()
+        } catch {
+            self.errorMessage = error.localizedDescription
+            self.showError = true
+            HapticManager.shared.error()
         }
     }
 
@@ -74,18 +105,7 @@ public final class AuthViewModel: ObservableObject {
         do {
             let profile = try await authService.signInWithApple(idToken: idToken, nonce: nonce)
             HapticManager.shared.buttonTap()
-
-            // Check if profile needs onboarding (default username or no city selected)
-            let isDefaultUsername = profile.username.hasPrefix("user_") || profile.username.isEmpty
-            let hasCity = profile.cityId != nil
-
-            if isDefaultUsername || !hasCity {
-                appState.activeProfile = profile
-                appState.sessionStatus = .needsOnboarding(userId: profile.id)
-            } else {
-                appState.activeProfile = profile
-                appState.sessionStatus = .authenticated(profile)
-            }
+            routeAfterSignIn(profile: profile, appState: appState)
         } catch let error as APIError {
             self.errorMessage = error.localizedDescription
             self.showError = true
@@ -94,6 +114,19 @@ public final class AuthViewModel: ObservableObject {
             self.errorMessage = error.localizedDescription
             self.showError = true
             HapticManager.shared.error()
+        }
+    }
+
+    private func routeAfterSignIn(profile: Profile, appState: AppState) {
+        let isDefaultUsername = profile.username.hasPrefix("user_") || profile.username.isEmpty
+        let hasCity = profile.cityId != nil
+
+        if isDefaultUsername || !hasCity {
+            appState.activeProfile = profile
+            appState.sessionStatus = .needsOnboarding(userId: profile.id)
+        } else {
+            appState.activeProfile = profile
+            appState.sessionStatus = .authenticated(profile)
         }
     }
 }

@@ -597,7 +597,7 @@ private struct LegalSection: View {
             }
             .padding(.top, LayoutTokens.spacingS)
 
-            Text("Klymb iOS • v1.0.0 (Build 42)")
+            Text("Klymb iOS • v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0") (Build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
                 .font(TypographyTokens.caption2)
                 .foregroundStyle(ColorTokens.textTertiary)
         }

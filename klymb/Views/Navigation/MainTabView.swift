@@ -10,36 +10,39 @@ import SwiftUI
 
 public struct MainTabView: View {
     @EnvironmentObject private var appState: AppState
+    private let container: AppContainerProtocol
 
-    public init() {}
+    public init(container: AppContainerProtocol = AppContainer.mock) {
+        self.container = container
+    }
 
     public var body: some View {
         TabView(selection: $appState.selectedTab) {
-            HomeView()
+            HomeView(container: container)
             .tabItem {
                 Label(MainTab.home.title, systemImage: MainTab.home.iconName)
             }
             .tag(MainTab.home)
 
-            ManualLogView()
+            ManualLogView(container: container)
             .tabItem {
                 Label(MainTab.log.title, systemImage: MainTab.log.iconName)
             }
             .tag(MainTab.log)
 
-            CompeteView()
+            CompeteView(container: container)
             .tabItem {
                 Label(MainTab.compete.title, systemImage: MainTab.compete.iconName)
             }
             .tag(MainTab.compete)
 
-            ChallengesView()
+            ChallengesView(container: container)
             .tabItem {
                 Label(MainTab.challenges.title, systemImage: MainTab.challenges.iconName)
             }
             .tag(MainTab.challenges)
 
-            ProfileView()
+            ProfileView(container: container)
             .tabItem {
                 Label(MainTab.profile.title, systemImage: MainTab.profile.iconName)
             }

@@ -65,7 +65,8 @@ public final class ManualLogViewModel: ObservableObject {
         let now = Date()
         let startedAt: Date
         if selectedType == .hydration {
-            startedAt = now
+            // Postgres requires started_at < ended_at (valid_time_range check constraint)
+            startedAt = now.addingTimeInterval(-60)
         } else {
             // Started 'quantity' minutes ago
             startedAt = now.addingTimeInterval(-quantity * 60)

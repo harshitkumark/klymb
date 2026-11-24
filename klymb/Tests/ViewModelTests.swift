@@ -60,7 +60,7 @@ public struct ViewModelTests {
             // 1. Test Hydration defaults & estimation
             vm.selectType(.hydration)
             try KlymbAssert.assertEqual(vm.quantity, 500)
-            try KlymbAssert.assertEqual(vm.estimatedKP, 2)
+            try KlymbAssert.assertEqual(vm.estimatedKP, 5)
 
             // 2. Test Increment
             vm.increment()
