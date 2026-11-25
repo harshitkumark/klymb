@@ -2,7 +2,7 @@
 //  LayoutTokens.swift
 //  klymb
 //
-//  Spacing, corner radius, and elevation tokens matching docs/DESIGN_SYSTEM.md §4.
+//  Spacing, corner radii, and specular surface modifiers.
 //
 
 import SwiftUI
@@ -37,52 +37,77 @@ public enum KlymbRadius {
     /// 8pt: Small chips, tags, badges
     public static let sm: CGFloat = 8
 
-    /// 12pt: Input fields, small cards
+    /// 12pt: Input fields, segmented tabs
     public static let md: CGFloat = 12
 
-    /// 16pt: Standard cards, buttons
+    /// 16pt: Standard surfaces, buttons
     public static let lg: CGFloat = 16
 
-    /// 24pt: Large cards, modal sheets
-    public static let xl: CGFloat = 24
+    /// 22pt: Hero cards, console modules, sheets
+    public static let xl: CGFloat = 22
 
-    /// 9999pt: Circular elements (avatars, rank badges)
+    /// 9999pt: Circular elements
     public static let full: CGFloat = 9999
 }
 
-// MARK: - Elevation & Border Modifiers (DESIGN_SYSTEM.md §4.3)
+// MARK: - Architectural Surface Modifier (Top-lit hairline specular border, zero harsh glare)
 public struct KlymbCardStyle: ViewModifier {
     public var cornerRadius: CGFloat
     public var isHighlighted: Bool
+    public var accentColor: Color
+    public var isElevated: Bool
 
-    public init(cornerRadius: CGFloat = KlymbRadius.xl, isHighlighted: Bool = false) {
+    public init(
+        cornerRadius: CGFloat = KlymbRadius.lg,
+        isHighlighted: Bool = false,
+        accentColor: Color = Color.KlymbAccent.primary,
+        isElevated: Bool = false
+    ) {
         self.cornerRadius = cornerRadius
         self.isHighlighted = isHighlighted
+        self.accentColor = accentColor
+        self.isElevated = isElevated
     }
 
     public func body(content: Content) -> some View {
-        content
-            .background(Color.KlymbBackground.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(
-                        isHighlighted ? Color.KlymbAccent.primary : Color.KlymbBorder.default,
-                        lineWidth: isHighlighted ? 1.5 : 1.0
-                    )
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        return content
+            .background(
+                Group {
+                    if isElevated {
+                        KlymbGradient.card
+                    } else {
+                        Color.KlymbBackground.secondary
+                    }
+                }
             )
-            .shadow(
-                color: isHighlighted ? Color.KlymbAccent.primary.opacity(0.15) : Color.clear,
-                radius: 8,
-                x: 0,
-                y: 0
+            .clipShape(shape)
+            .overlay(
+                shape.strokeBorder(
+                    isHighlighted
+                        ? AnyShapeStyle(accentColor.opacity(0.45))
+                        : AnyShapeStyle(KlymbGradient.specularBorder),
+                    lineWidth: isHighlighted ? 1.25 : 1.0
+                )
             )
     }
 }
 
 public extension View {
-    func klymbCardStyle(cornerRadius: CGFloat = KlymbRadius.xl, isHighlighted: Bool = false) -> some View {
-        self.modifier(KlymbCardStyle(cornerRadius: cornerRadius, isHighlighted: isHighlighted))
+    func klymbCardStyle(
+        cornerRadius: CGFloat = KlymbRadius.lg,
+        isHighlighted: Bool = false,
+        accentColor: Color = Color.KlymbAccent.primary,
+        isElevated: Bool = false
+    ) -> some View {
+        self.modifier(
+            KlymbCardStyle(
+                cornerRadius: cornerRadius,
+                isHighlighted: isHighlighted,
+                accentColor: accentColor,
+                isElevated: isElevated
+            )
+        )
     }
 }
 

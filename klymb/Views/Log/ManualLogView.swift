@@ -2,14 +2,15 @@
 //  ManualLogView.swift
 //  klymb
 //
-//  Manual activity quick-log screen for Water, Workout, and Mindfulness (PRD §F6).
-//  (AGENTS.md Rule 2 & 3: Labeled estimates, Rule 15: SwiftUI + MVVM, Rule 18: Accessibility).
+//  Manual activity quick-log console for Hydration, Workout, and Mindfulness.
+//  Preserves AGENTS.md Rules 2 & 3 (server-authoritative scoring, preview estimates).
 //
 
 import SwiftUI
 
 public struct ManualLogView: View {
     @StateObject private var viewModel: ManualLogViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
         _viewModel = StateObject(wrappedValue: ManualLogViewModel(container: container))
@@ -18,58 +19,44 @@ public struct ManualLogView: View {
     public var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                ScrollView {
-                    VStack(spacing: LayoutTokens.spacingL) {
-                        // Header
-                        VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                            Text("LOG ACTIVITY")
-                                .font(TypographyTokens.title1)
-                                .foregroundStyle(ColorTokens.textPrimary)
+                Color.KlymbBackground.primary.ignoresSafeArea()
 
-                            Text("Quickly log manual disciplines. Manual entries earn at a balanced rate to protect leaderboard fairness.")
-                                .font(TypographyTokens.subheadline)
-                                .foregroundStyle(ColorTokens.textSecondary)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: KlymbSpacing.lg) {
+                        // 1. Clean Editorial Header
+                        VStack(alignment: .leading, spacing: KlymbSpacing.xs) {
+                            Text("Quick Log")
+                                .font(Font.Klymb.titleLarge)
+                                .foregroundStyle(Color.KlymbText.primary)
 
-                            HStack(spacing: 4) {
-                                Image(systemName: "info.circle.fill")
-                                    .font(.system(size: 11))
-                                Text("Unverified • Subject to manual daily caps")
-                                    .font(TypographyTokens.caption2.weight(.semibold))
-                            }
-                            .foregroundStyle(ColorTokens.neonOrange)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(ColorTokens.neonOrange.opacity(0.12))
-                            .clipShape(Capsule())
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                        .padding(.top, LayoutTokens.spacingS)
-
-                        // 1. Discipline Selector (3 options)
-                        HStack(spacing: LayoutTokens.spacingS) {
-                            ForEach(ManualLogType.allCases) { type in
-                                DisciplineTabButton(
-                                    type: type,
-                                    isSelected: viewModel.selectedType == type
-                                ) {
-                                    viewModel.selectType(type)
-                                }
-                            }
+                            Text("Manual entries score at 0.5x to protect city leaderboard fairness.")
+                                .font(Font.Klymb.bodySmall)
+                                .foregroundStyle(Color.KlymbText.secondary)
                         }
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                        .padding(.top, KlymbSpacing.sm)
 
-                        // 2. Workout Sub-type Picker (if workout selected)
+                        // 2. Sliding Discipline Selector
+                        KlymbSegmentedControl(
+                            options: ManualLogType.allCases,
+                            selection: Binding(
+                                get: { viewModel.selectedType },
+                                set: { viewModel.selectType($0) }
+                            ),
+                            title: { $0.title },
+                            accentSelectionText: true,
+                            onSelect: { viewModel.selectType($0) }
+                        )
+                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        // 3. Workout Category Chips
                         if viewModel.selectedType == .workout {
-                            VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                                Text("WORKOUT CATEGORY")
-                                    .font(TypographyTokens.caption1)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(ColorTokens.textTertiary)
+                            VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+                                KlymbSectionHeader("Workout Type")
                                     .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
                                 ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: LayoutTokens.spacingS) {
+                                    HStack(spacing: KlymbSpacing.sm) {
                                         ForEach(WorkoutTypeOption.allOptions) { option in
                                             WorkoutOptionChip(
                                                 option: option,
@@ -85,124 +72,106 @@ public struct ManualLogView: View {
                             }
                         }
 
-                        // 3. Central Stepper & Quantity Display Card
-                        KlymbCard(padding: LayoutTokens.paddingL) {
-                            VStack(spacing: LayoutTokens.spacingM) {
-                                Text("AMOUNT TO LOG")
-                                    .font(TypographyTokens.caption2)
-                                    .fontWeight(.heavy)
-                                    .tracking(1.5)
-                                    .foregroundStyle(ColorTokens.textTertiary)
+                        // 4. Consolidated Precision Console + Inline Estimated Preview Footer
+                        VStack(spacing: 0) {
+                            VStack(spacing: KlymbSpacing.lg) {
+                                Text("\(viewModel.selectedType.title.uppercased()) AMOUNT")
+                                    .font(Font.Klymb.telemetry)
+                                    .tracking(1.4)
+                                    .foregroundStyle(Color.KlymbText.secondary)
 
-                                HStack(spacing: LayoutTokens.spacingXL) {
-                                    // Decrement Button
-                                    Button {
+                                HStack(spacing: KlymbSpacing.xl) {
+                                    StepperButton(symbol: "minus", accessibilityTitle: "Decrease amount") {
                                         viewModel.decrement()
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(ColorTokens.backgroundSecondary)
-                                                .frame(width: 48, height: 48)
-
-                                            Image(systemName: "minus")
-                                                .font(.system(size: 20, weight: .bold))
-                                                .foregroundStyle(ColorTokens.textPrimary)
-                                        }
                                     }
-                                    .accessibilityLabel("Decrease amount")
 
-                                    // Big Number Display
-                                    VStack(spacing: 0) {
+                                    VStack(spacing: 2) {
                                         Text("\(Int(viewModel.quantity))")
-                                            .font(.system(size: 44, weight: .black, design: .rounded))
-                                            .foregroundStyle(ColorTokens.textPrimary)
-                                            .minimumScaleFactor(0.7)
+                                            .font(.system(size: 52, weight: .heavy).width(.condensed))
+                                            .monospacedDigit()
+                                            .foregroundStyle(Color.KlymbText.primary)
                                             .lineLimit(1)
+                                            .minimumScaleFactor(0.7)
+                                            .contentTransition(reduceMotion ? .identity : .numericText(value: viewModel.quantity))
 
                                         Text(viewModel.selectedType.unit.uppercased())
-                                            .font(TypographyTokens.caption1.weight(.bold))
-                                            .foregroundStyle(ColorTokens.electricCyan)
+                                            .font(Font.Klymb.telemetry)
+                                            .tracking(1.5)
+                                            .foregroundStyle(Color.KlymbAccent.soft)
                                     }
-                                    .frame(minWidth: 100)
+                                    .frame(minWidth: 112)
                                     .accessibilityElement(children: .combine)
                                     .accessibilityLabel("Current amount: \(Int(viewModel.quantity)) \(viewModel.selectedType.unit)")
                                     .accessibilityValue("\(Int(viewModel.quantity)) \(viewModel.selectedType.unit)")
 
-                                    // Increment Button
-                                    Button {
+                                    StepperButton(symbol: "plus", accessibilityTitle: "Increase amount") {
                                         viewModel.increment()
-                                    } label: {
-                                        ZStack {
-                                            Circle()
-                                                .fill(ColorTokens.backgroundSecondary)
-                                                .frame(width: 48, height: 48)
-
-                                            Image(systemName: "plus")
-                                                .font(.system(size: 20, weight: .bold))
-                                                .foregroundStyle(ColorTokens.textPrimary)
-                                        }
                                     }
-                                    .accessibilityLabel("Increase amount")
                                 }
 
-                                // Quick Presets
-                                HStack(spacing: LayoutTokens.spacingS) {
+                                // Quick Presets Row
+                                HStack(spacing: KlymbSpacing.sm) {
                                     ForEach(viewModel.selectedType.quickPresets, id: \.self) { preset in
+                                        let isSelected = viewModel.quantity == preset
                                         Button {
                                             viewModel.selectPreset(preset)
                                         } label: {
-                                            Text("\(Int(preset)) \(viewModel.selectedType.unit)")
-                                                .font(TypographyTokens.caption1.weight(.semibold))
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 6)
-                                                .background(viewModel.quantity == preset ? ColorTokens.electricCyan.opacity(0.2) : ColorTokens.backgroundSecondary)
-                                                .foregroundStyle(viewModel.quantity == preset ? ColorTokens.electricCyan : ColorTokens.textSecondary)
-                                                .clipShape(Capsule())
+                                            Text("\(Int(preset))")
+                                                .font(Font.Klymb.telemetry)
+                                                .monospacedDigit()
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 8)
+                                                .background(isSelected ? Color.KlymbAccent.primaryMuted : Color.KlymbBackground.tertiary)
+                                                .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
+                                                .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.sm, style: .continuous))
                                                 .overlay(
-                                                    Capsule().stroke(viewModel.quantity == preset ? ColorTokens.electricCyan : Color.clear, lineWidth: 1)
+                                                    RoundedRectangle(cornerRadius: KlymbRadius.sm, style: .continuous)
+                                                        .strokeBorder(
+                                                            isSelected ? Color.KlymbAccent.primary.opacity(0.6) : Color.KlymbBorder.subtle,
+                                                            lineWidth: 1
+                                                        )
                                                 )
                                         }
+                                        .buttonStyle(KlymbPressableButtonStyle())
+                                        .accessibilityLabel("\(Int(preset)) \(viewModel.selectedType.unit)")
                                     }
                                 }
-                                .padding(.top, LayoutTokens.spacingS)
                             }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                            .padding(.horizontal, KlymbSpacing.lg)
+                            .padding(.vertical, KlymbSpacing.xl)
 
-                        // 4. Estimated KP Preview Card (Rule 2 & 3 Compliance)
-                        KlymbCard(padding: LayoutTokens.paddingM) {
-                            HStack {
+                            Divider().background(Color.KlymbBorder.subtle)
+
+                            // Integrated Estimate Footer (Rule 2 & 3 Compliance)
+                            HStack(alignment: .center) {
                                 VStack(alignment: .leading, spacing: 2) {
-                                    HStack(spacing: 4) {
-                                        Text("ESTIMATED KP")
-                                            .font(TypographyTokens.caption2.weight(.heavy))
-                                            .tracking(1)
-                                            .foregroundStyle(ColorTokens.textTertiary)
+                                    Text("Estimated Preview")
+                                        .font(Font.Klymb.caption.weight(.semibold))
+                                        .foregroundStyle(Color.KlymbText.primary)
 
-                                        Text("(Preview)")
-                                            .font(TypographyTokens.caption2)
-                                            .foregroundStyle(ColorTokens.textTertiary)
-                                    }
-
-                                    Text("Official KP awarded by server upon sync")
-                                        .font(TypographyTokens.caption2)
-                                        .foregroundStyle(ColorTokens.textSecondary)
+                                    Text("Unverified • Daily cap \(viewModel.selectedType.manualDailyKPCap) KP • Server-verified")
+                                        .font(Font.Klymb.captionSmall)
+                                        .foregroundStyle(Color.KlymbText.secondary)
                                 }
 
-                                Spacer()
+                                Spacer(minLength: KlymbSpacing.sm)
 
                                 Text("~\(viewModel.estimatedKP) KP")
-                                    .font(TypographyTokens.title2.weight(.bold))
-                                    .foregroundStyle(ColorTokens.electricCyan)
+                                    .font(Font.Klymb.athleticMetric)
+                                    .foregroundStyle(Color.KlymbAccent.soft)
                             }
+                            .padding(.horizontal, KlymbSpacing.lg)
+                            .padding(.vertical, 14)
+                            .background(Color.KlymbBackground.primary.opacity(0.35))
                         }
+                        .klymbCardStyle(cornerRadius: KlymbRadius.xl, isElevated: true)
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
                         // 5. Submit CTA Button
                         PrimaryButton(
-                            "Log \(viewModel.selectedType.title)",
-                            icon: "plus.circle.fill",
+                            "Log \(Int(viewModel.quantity)) \(viewModel.selectedType.unit)",
+                            icon: "plus",
+                            tone: .bone,
                             isLoading: viewModel.isSubmitting
                         ) {
                             Task {
@@ -210,111 +179,71 @@ public struct ManualLogView: View {
                             }
                         }
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                        .padding(.top, LayoutTokens.spacingS)
 
-                        // Error Banner
                         if let error = viewModel.errorMessage {
                             Text(error)
-                                .font(TypographyTokens.caption1)
-                                .foregroundStyle(ColorTokens.neonRed)
+                                .font(Font.Klymb.caption)
+                                .foregroundStyle(Color.KlymbSemantic.error)
                                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                         }
 
                         Spacer(minLength: 40)
                     }
-                    .padding(.bottom, LayoutTokens.spacingXXL)
+                    .padding(.bottom, KlymbSpacing.xl)
                 }
 
-                // 6. Success Toast
+                // 6. Floating Glass Toast
                 if viewModel.showSuccessToast {
-                    HStack(spacing: LayoutTokens.spacingS) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(ColorTokens.neonGreen)
-                        Text(viewModel.successMessage)
-                            .font(TypographyTokens.caption1.weight(.semibold))
-                            .foregroundStyle(ColorTokens.textPrimary)
-                    }
-                    .padding(.horizontal, LayoutTokens.paddingL)
-                    .padding(.vertical, LayoutTokens.paddingM)
-                    .background(ColorTokens.backgroundSecondary)
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule().stroke(ColorTokens.neonGreen.opacity(0.4), lineWidth: 1.5)
+                    KlymbToastBanner(
+                        icon: "checkmark.circle.fill",
+                        message: viewModel.successMessage,
+                        trailingLabel: "SYNCED",
+                        accentColor: Color.KlymbSemantic.success
                     )
-                    .shadow(color: Color.black.opacity(0.4), radius: 10, y: 4)
-                    .padding(.bottom, LayoutTokens.spacingXL)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                    .padding(.bottom, KlymbSpacing.lg)
+                    .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                            withAnimation {
+                            withAnimation(reduceMotion ? nil : MotionTokens.springStandard) {
                                 viewModel.showSuccessToast = false
                             }
                         }
                     }
                 }
             }
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: viewModel.showSuccessToast)
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("LOG")
-                        .font(TypographyTokens.headline)
-                        .fontWeight(.black)
-                        .tracking(3)
-                        .foregroundStyle(ColorTokens.textPrimary)
-                }
-            }
+            .animation(reduceMotion ? nil : MotionTokens.springStandard, value: viewModel.showSuccessToast)
+            .toolbar(.hidden, for: .navigationBar)
         }
     }
 }
 
-// MARK: - Discipline Tab Button
-private struct DisciplineTabButton: View {
-    let type: ManualLogType
-    let isSelected: Bool
+private struct StepperButton: View {
+    let symbol: String
+    let accessibilityTitle: String
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            KlymbCard(
-                glowColor: isSelected ? ColorTokens.electricCyan.opacity(0.2) : nil,
-                padding: LayoutTokens.paddingM
-            ) {
-                VStack(spacing: LayoutTokens.spacingS) {
-                    ZStack {
-                        Circle()
-                            .fill(isSelected ? ColorTokens.electricCyan.opacity(0.2) : ColorTokens.backgroundSecondary)
-                            .frame(width: 40, height: 40)
+            ZStack {
+                RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                    .fill(Color.KlymbBackground.tertiary)
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                            .strokeBorder(KlymbGradient.specularBorder, lineWidth: 1)
+                    )
 
-                        Image(systemName: type.iconName)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textPrimary)
-                    }
-
-                    Text(type.title)
-                        .font(TypographyTokens.caption1.weight(.bold))
-                        .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textPrimary)
-
-                    Text("Max \(type.manualDailyKPCap) KP")
-                        .font(.system(size: 10))
-                        .foregroundStyle(ColorTokens.textTertiary)
-                }
-                .frame(maxWidth: .infinity)
+                Image(systemName: symbol)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(Color.KlymbText.primary)
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                    .stroke(isSelected ? ColorTokens.electricCyan : Color.clear, lineWidth: 1.5)
-            )
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(type.title), maximum \(type.manualDailyKPCap) KP per day")
-        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
+        .buttonStyle(KlymbPressableButtonStyle())
+        .accessibilityLabel(accessibilityTitle)
     }
 }
 
-// MARK: - Workout Option Chip
 private struct WorkoutOptionChip: View {
     let option: WorkoutTypeOption
     let isSelected: Bool
@@ -324,19 +253,28 @@ private struct WorkoutOptionChip: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Image(systemName: option.iconName)
-                    .font(.system(size: 14))
+                    .font(.system(size: 13, weight: .medium))
                 Text(option.name)
-                    .font(TypographyTokens.caption1.weight(.semibold))
+                    .font(Font.Klymb.caption.weight(.semibold))
             }
-            .padding(.horizontal, LayoutTokens.paddingM)
-            .padding(.vertical, LayoutTokens.paddingS)
-            .background(isSelected ? ColorTokens.electricCyan.opacity(0.2) : ColorTokens.backgroundSecondary)
-            .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textPrimary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.KlymbAccent.primaryMuted : Color.KlymbBackground.secondary)
+            .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
             .clipShape(Capsule())
             .overlay(
-                Capsule().stroke(isSelected ? ColorTokens.electricCyan : ColorTokens.borderSubtle, lineWidth: 1)
+                Capsule()
+                    .strokeBorder(
+                        isSelected ? Color.KlymbAccent.primary.opacity(0.6) : Color.KlymbBorder.default,
+                        lineWidth: 1
+                    )
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KlymbPressableButtonStyle())
     }
+}
+
+#Preview {
+    ManualLogView()
+        .preferredColorScheme(.dark)
 }

@@ -2,8 +2,7 @@
 //  KPCounterView.swift
 //  klymb
 //
-//  Rolling KP counter matching docs/DESIGN_SYSTEM.md §6.2 & §9.6.
-//  Animated count-up with monospaced digits and Reduce Motion support.
+//  Rolling KP counter with condensed athletic tabular numerals and Reduce Motion support.
 //
 
 import SwiftUI
@@ -15,12 +14,14 @@ public struct KPCounterView: View {
     public let color: Color
 
     @State private var displayValue: Int = 0
+    @State private var animationTask: Task<Void, Never>?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         value: Int,
         prefix: String? = nil,
         font: Font = Font.Klymb.kpCounter,
-        color: Color = Color.KlymbAccent.primary
+        color: Color = Color.KlymbText.primary
     ) {
         self.targetValue = value
         self.prefix = prefix
@@ -30,16 +31,17 @@ public struct KPCounterView: View {
 
     public var body: some View {
         HStack(spacing: 2) {
-            if let prefix = prefix {
+            if let prefix {
                 Text(prefix)
                     .font(font)
                     .foregroundStyle(color)
             }
 
-            Text("\(displayValue)")
+            Text(formattedValue(displayValue))
                 .font(font)
+                .monospacedDigit()
                 .foregroundStyle(color)
-                .contentTransition(.numericText(value: Double(displayValue)))
+                .contentTransition(reduceMotion ? .identity : .numericText(value: Double(displayValue)))
         }
         .onAppear {
             animateValue(to: targetValue)
@@ -47,11 +49,20 @@ public struct KPCounterView: View {
         .onChange(of: targetValue) { _, newValue in
             animateValue(to: newValue)
         }
+        .onDisappear {
+            animationTask?.cancel()
+        }
         .accessibilityLabel("\(prefix ?? "") \(targetValue) Klymb Points")
     }
 
+    private func formattedValue(_ value: Int) -> String {
+        value.formatted()
+    }
+
     private func animateValue(to target: Int) {
-        if UIAccessibility.isReduceMotionEnabled {
+        animationTask?.cancel()
+
+        if reduceMotion || UIAccessibility.isReduceMotionEnabled {
             displayValue = target
             return
         }
@@ -60,14 +71,21 @@ public struct KPCounterView: View {
         let diff = target - start
         guard diff != 0 else { return }
 
-        let steps = min(abs(diff), 25)
-        let stepDuration = 0.8 / Double(steps)
+        let steps = min(abs(diff), 20)
+        let stepIntervalNs = UInt64((0.55 / Double(steps)) * 1_000_000_000)
 
-        for i in 1...steps {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * stepDuration) {
+        animationTask = Task { @MainActor in
+            for i in 1...steps {
+                try? await Task.sleep(nanoseconds: stepIntervalNs)
+                if Task.isCancelled { return }
                 let progress = Double(i) / Double(steps)
-                let eased = 1 - pow(1 - progress, 3) // ease-out cubic
-                self.displayValue = start + Int(Double(diff) * eased)
+                let eased = 1 - pow(1 - progress, 3)
+                withAnimation(.easeOut(duration: 0.08)) {
+                    self.displayValue = start + Int(Double(diff) * eased)
+                }
+            }
+            if !Task.isCancelled {
+                self.displayValue = target
             }
         }
     }
@@ -75,8 +93,8 @@ public struct KPCounterView: View {
 
 #Preview {
     VStack(spacing: 20) {
-        KPCounterView(value: 1250)
-        KPCounterView(value: 80, prefix: "+", color: Color.KlymbSemantic.success)
+        KPCounterView(value: 1247)
+        KPCounterView(value: 114, prefix: "+", color: Color.KlymbAccent.soft)
     }
     .padding()
     .background(Color.KlymbBackground.primary)

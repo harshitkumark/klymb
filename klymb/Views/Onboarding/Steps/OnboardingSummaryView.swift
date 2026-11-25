@@ -3,7 +3,6 @@
 //  klymb
 //
 //  Step 6: Final Review & Confirmation before entering the Arena.
-//  (AGENTS.md Rule 15: SwiftUI + MVVM, Rule 18: Accessibility).
 //
 
 import SwiftUI
@@ -18,87 +17,82 @@ public struct OnboardingSummaryView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(spacing: LayoutTokens.spacingL) {
-                // Celebration Badge
+            VStack(spacing: LayoutTokens.spacingXL) {
+                // Emblem Header
                 ZStack {
                     Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [ColorTokens.electricCyan.opacity(0.3), Color.clear],
-                                center: .center,
-                                startRadius: 10,
-                                endRadius: 60
-                            )
+                        .fill(Color.KlymbAccent.primaryMuted)
+                        .frame(width: 96, height: 96)
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.KlymbAccent.primary.opacity(0.5), lineWidth: 1.5)
                         )
-                        .frame(width: 120, height: 120)
 
                     Image(systemName: avatarIcon)
-                        .font(.system(size: 48, weight: .bold))
-                        .foregroundStyle(ColorTokens.electricCyan)
+                        .font(.system(size: 38, weight: .bold))
+                        .foregroundStyle(Color.KlymbAccent.soft)
                 }
                 .padding(.top, LayoutTokens.spacingM)
 
-                // Identity Headers
-                VStack(spacing: LayoutTokens.spacingXS) {
+                // Identity
+                VStack(spacing: 4) {
                     Text(viewModel.displayName.isEmpty ? "@\(viewModel.username)" : viewModel.displayName)
-                        .font(TypographyTokens.largeTitle)
-                        .foregroundStyle(ColorTokens.textPrimary)
+                        .font(Font.Klymb.titleLarge)
+                        .foregroundStyle(Color.KlymbText.primary)
 
                     if !viewModel.displayName.isEmpty {
                         Text("@\(viewModel.username)")
-                            .font(TypographyTokens.headline)
-                            .foregroundStyle(ColorTokens.electricCyan)
+                            .font(Font.Klymb.headline)
+                            .foregroundStyle(Color.KlymbAccent.soft)
                     }
                 }
                 .accessibilityElement(children: .combine)
 
-                // Profile Configuration Card
-                KlymbCard(padding: LayoutTokens.paddingL) {
-                    VStack(spacing: LayoutTokens.spacingM) {
-                        // Arena
-                        SummaryRow(
-                            icon: "building.2.fill",
-                            label: "City Arena",
-                            value: viewModel.selectedCity?.name ?? "Global",
-                            accent: ColorTokens.textPrimary
-                        )
+                // Unified Configuration Surface
+                KlymbGroupedSurface {
+                    SummaryRow(
+                        icon: "building.2.fill",
+                        label: "City Arena",
+                        value: viewModel.selectedCity?.name ?? "Global",
+                        accent: Color.KlymbText.primary
+                    )
 
-                        Divider().background(ColorTokens.borderSubtle)
+                    Divider()
+                        .background(Color.KlymbBorder.subtle)
+                        .padding(.leading, 48)
 
-                        // Habits
-                        SummaryRow(
-                            icon: "bolt.heart.fill",
-                            label: "Tracked Habits",
-                            value: "\(viewModel.selectedHabitIds.count) Disciplines",
-                            accent: ColorTokens.neonGreen
-                        )
+                    SummaryRow(
+                        icon: "bolt.heart.fill",
+                        label: "Tracked Habits",
+                        value: "\(viewModel.selectedHabitIds.count) Disciplines",
+                        accent: Color.KlymbSemantic.success
+                    )
 
-                        Divider().background(ColorTokens.borderSubtle)
+                    Divider()
+                        .background(Color.KlymbBorder.subtle)
+                        .padding(.leading, 48)
 
-                        // Rank
-                        SummaryRow(
-                            icon: "trophy.fill",
-                            label: "Starting Tier",
-                            value: "Rookie (0 KP)",
-                            accent: ColorTokens.neonYellow
-                        )
-                    }
+                    SummaryRow(
+                        icon: "trophy.fill",
+                        label: "Starting Tier",
+                        value: "Rookie (0 KP)",
+                        accent: Color.KlymbAccent.soft
+                    )
                 }
 
-                // Error Message if any
                 if viewModel.showError, let error = viewModel.errorMessage {
                     Text(error)
-                        .font(TypographyTokens.caption1)
-                        .foregroundStyle(ColorTokens.neonOrange)
+                        .font(Font.Klymb.caption)
+                        .foregroundStyle(Color.KlymbSemantic.error)
                         .multilineTextAlignment(.center)
                 }
 
-                Spacer(minLength: 30)
+                Spacer(minLength: 24)
 
-                // Primary Launch Button
                 PrimaryButton(
                     title: "Enter the Arena",
                     icon: "flag.checkered",
+                    tone: .terracotta,
                     isLoading: viewModel.isSubmitting
                 ) {
                     Task {
@@ -113,7 +107,7 @@ public struct OnboardingSummaryView: View {
     }
 
     private var avatarIcon: String {
-        viewModel.avatarPresets.first(where: { $0.id == viewModel.selectedAvatar })?.iconName ?? "figure.run"
+        viewModel.avatarPresets.first(where: { $0.id == viewModel.selectedAvatar })?.iconName ?? KlymbIconCatalog.avatarIcon(for: viewModel.selectedAvatar)
     }
 }
 
@@ -124,22 +118,24 @@ private struct SummaryRow: View {
     let accent: Color
 
     var body: some View {
-        HStack {
+        HStack(spacing: KlymbSpacing.md) {
             Image(systemName: icon)
-                .font(.system(size: 16))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(accent)
                 .frame(width: 24)
 
             Text(label)
-                .font(TypographyTokens.subheadline)
-                .foregroundStyle(ColorTokens.textSecondary)
+                .font(Font.Klymb.bodySmall)
+                .foregroundStyle(Color.KlymbText.secondary)
 
             Spacer()
 
             Text(value)
-                .font(TypographyTokens.headline)
+                .font(Font.Klymb.headline)
                 .foregroundStyle(accent)
         }
+        .padding(.horizontal, KlymbSpacing.lg)
+        .padding(.vertical, 16)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label): \(value)")
     }

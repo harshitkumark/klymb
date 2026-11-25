@@ -2,8 +2,7 @@
 //  HabitStepView.swift
 //  klymb
 //
-//  Step 4: Habit Selection with Daily KP Caps and Units.
-//  (AGENTS.md Rule 15: SwiftUI + MVVM, Rule 18: Accessibility).
+//  Step 4: Habit Selection inside a unified grouped container with Daily KP Caps.
 //
 
 import SwiftUI
@@ -19,39 +18,31 @@ public struct HabitStepView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: LayoutTokens.spacingL) {
-                    // Header
                     VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                        Text("SELECT YOUR DISCIPLINES")
-                            .font(TypographyTokens.title1)
-                            .foregroundStyle(ColorTokens.textPrimary)
+                        Text("Pick your habits")
+                            .font(Font.Klymb.titleLarge)
+                            .foregroundStyle(Color.KlymbText.primary)
 
-                        Text("Select which habits you want to track to earn KP every day. You can change these anytime in Settings.")
-                            .font(TypographyTokens.subheadline)
-                            .foregroundStyle(ColorTokens.textSecondary)
+                        Text("Select which disciplines earn KP each day. You can change these anytime in Settings.")
+                            .font(Font.Klymb.bodySmall)
+                            .foregroundStyle(Color.KlymbText.secondary)
                     }
                     .accessibilityElement(children: .combine)
 
-                    // Recommended count pill
-                    HStack(spacing: LayoutTokens.spacingS) {
-                        Image(systemName: "sparkles")
-                            .foregroundStyle(ColorTokens.neonYellow)
-
-                        Text("\(viewModel.selectedHabitIds.count) of \(viewModel.habits.count) selected (Recommended: 3+ for streak XP)")
-                            .font(TypographyTokens.caption1)
-                            .foregroundStyle(ColorTokens.textPrimary)
-                    }
-                    .padding(.horizontal, LayoutTokens.paddingM)
-                    .padding(.vertical, LayoutTokens.paddingS)
-                    .background(ColorTokens.neonYellow.opacity(0.12))
-                    .clipShape(Capsule())
-                    .overlay(
-                        Capsule().stroke(ColorTokens.neonYellow.opacity(0.3), lineWidth: 1)
+                    KlymbSectionHeader(
+                        "Disciplines",
+                        trailingText: "\(viewModel.selectedHabitIds.count)/\(viewModel.habits.count) SELECTED (REC: 3+)",
+                        trailingColor: viewModel.selectedHabitIds.count >= 3 ? Color.KlymbSemantic.success : Color.KlymbAccent.soft
                     )
 
-                    // Habits List
-                    VStack(spacing: LayoutTokens.spacingM) {
-                        ForEach(viewModel.habits) { habit in
-                            HabitSelectionCard(
+                    KlymbGroupedSurface {
+                        ForEach(Array(viewModel.habits.enumerated()), id: \.element.id) { index, habit in
+                            if index > 0 {
+                                Divider()
+                                    .background(Color.KlymbBorder.subtle)
+                                    .padding(.leading, 52)
+                            }
+                            HabitSelectionRow(
                                 habit: habit,
                                 isSelected: viewModel.selectedHabitIds.contains(habit.id)
                             ) {
@@ -60,17 +51,15 @@ public struct HabitStepView: View {
                         }
                     }
 
-                    Spacer(minLength: 40)
+                    Spacer(minLength: 32)
                 }
                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                .padding(.top, LayoutTokens.spacingL)
+                .padding(.top, LayoutTokens.spacingM)
                 .padding(.bottom, LayoutTokens.spacingXXL)
             }
 
-            // Fixed Bottom CTA
-            VStack {
-                Divider()
-                    .background(ColorTokens.borderSubtle)
+            VStack(spacing: 0) {
+                Divider().background(Color.KlymbBorder.subtle)
 
                 PrimaryButton(
                     title: "Next: Permissions",
@@ -82,96 +71,60 @@ public struct HabitStepView: View {
                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                 .padding(.vertical, LayoutTokens.spacingM)
             }
-            .background(ColorTokens.backgroundPrimary)
+            .background(Color.KlymbBackground.primary)
         }
     }
 }
 
-private struct HabitSelectionCard: View {
+private struct HabitSelectionRow: View {
     let habit: Habit
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            KlymbCard(
-                glowColor: isSelected ? ColorTokens.neonGreen.opacity(0.2) : nil,
-                padding: LayoutTokens.paddingM
-            ) {
-                HStack(spacing: LayoutTokens.spacingM) {
-                    // Habit Icon
-                    ZStack {
-                        Circle()
-                            .fill(isSelected ? ColorTokens.neonGreen.opacity(0.2) : ColorTokens.backgroundSecondary)
-                            .frame(width: 44, height: 44)
+            HStack(spacing: KlymbSpacing.md) {
+                Image(systemName: KlymbIconCatalog.habitIcon(for: habit.key))
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
+                    .frame(width: 24)
 
-                        Image(systemName: iconName(for: habit.key))
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(isSelected ? ColorTokens.neonGreen : ColorTokens.textPrimary)
-                    }
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: KlymbSpacing.sm) {
+                        Text(habit.displayName)
+                            .font(Font.Klymb.headline)
+                            .foregroundStyle(Color.KlymbText.primary)
 
-                    // Habit details
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: LayoutTokens.spacingS) {
-                            Text(habit.displayName)
-                                .font(TypographyTokens.headline)
-                                .foregroundStyle(ColorTokens.textPrimary)
-
-                            if habit.manualAllowed {
-                                Text("Manual ok")
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundStyle(ColorTokens.textTertiary)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(ColorTokens.backgroundSecondary)
-                                    .clipShape(Capsule())
-                            }
-                        }
-
-                        HStack(spacing: LayoutTokens.spacingS) {
-                            Text("Unit: \(habit.unit)")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
-
-                            Text("•")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
-
-                            Text("Cap: \(habit.dailyKPCap) KP/day")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.electricCyan)
+                        if habit.manualAllowed {
+                            Text("Manual")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Color.KlymbText.secondary)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.KlymbBackground.tertiary)
+                                .clipShape(Capsule())
                         }
                     }
 
-                    Spacer()
-
-                    // Selection Checkbox
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(isSelected ? ColorTokens.neonGreen : ColorTokens.textTertiary)
+                    Text("Unit: \(habit.unit)  •  Cap \(habit.dailyKPCap) KP/day")
+                        .font(Font.Klymb.captionSmall)
+                        .foregroundStyle(Color.KlymbText.secondary)
                 }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(isSelected ? Color.KlymbSemantic.success : Color.KlymbText.tertiary)
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                    .stroke(isSelected ? ColorTokens.neonGreen : Color.clear, lineWidth: 1.5)
-            )
+            .padding(.horizontal, KlymbSpacing.lg)
+            .padding(.vertical, 14)
+            .background(isSelected ? Color.KlymbSemantic.success.opacity(0.06) : Color.clear)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(habit.displayName), max \(habit.dailyKPCap) KP per day")
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])
-    }
-
-    private func iconName(for key: String) -> String {
-        switch key {
-        case "steps": return "figure.walk"
-        case "running": return "figure.run"
-        case "walking_distance": return "map.fill"
-        case "workout": return "dumbbell.fill"
-        case "hydration": return "drop.fill"
-        case "sleep": return "bed.double.fill"
-        case "mindfulness": return "brain.head.profile"
-        default: return "flame.fill"
-        }
     }
 }

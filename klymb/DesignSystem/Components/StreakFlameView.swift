@@ -2,8 +2,7 @@
 //  StreakFlameView.swift
 //  klymb
 //
-//  Streak flame badge matching docs/DESIGN_SYSTEM.md §6.2 & §9.
-//  Gentle flicker animation with accessibility Reduce Motion support.
+//  Sleek muted-copper streak badge tuned for OLED eye comfort and Reduce Motion.
 //
 
 import SwiftUI
@@ -12,37 +11,42 @@ public struct StreakFlameView: View {
     public let streakDays: Int
     public let isAtRisk: Bool
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     public init(streakDays: Int, isAtRisk: Bool = false) {
         self.streakDays = streakDays
         self.isAtRisk = isAtRisk
     }
 
     public var body: some View {
-        HStack(spacing: KlymbSpacing.xs) {
+        HStack(spacing: 5) {
             Image(systemName: "flame.fill")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(isAtRisk ? AnyShapeStyle(Color.KlymbSemantic.warning) : AnyShapeStyle(KlymbGradient.fire))
-                .frame(width: 20, height: 22)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(isAtRisk ? AnyShapeStyle(Color.KlymbSemantic.warning) : AnyShapeStyle(Color.KlymbAccent.primary))
+                .frame(width: 16, height: 18)
                 .symbolEffect(
                     .pulse,
                     options: .repeating,
-                    isActive: !UIAccessibility.isReduceMotionEnabled
+                    isActive: !reduceMotion && streakDays > 0
                 )
 
             Text("\(streakDays)")
-                .font(Font.Klymb.headline)
+                .font(Font.Klymb.rankNumber)
                 .foregroundStyle(Color.KlymbText.primary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, KlymbSpacing.md)
-        .padding(.vertical, KlymbSpacing.xs)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 6)
         .background(
             Capsule()
-                .fill(Color(hex: "FF6B00").opacity(0.15))
+                .fill(Color.KlymbAccent.primaryMuted)
         )
         .overlay(
             Capsule()
-                .stroke(isAtRisk ? Color.KlymbSemantic.warning : Color(hex: "FF6B00").opacity(0.4), lineWidth: 1)
+                .strokeBorder(
+                    isAtRisk ? Color.KlymbSemantic.warning.opacity(0.6) : Color.KlymbAccent.primary.opacity(0.32),
+                    lineWidth: 1
+                )
         )
         .fixedSize()
         .accessibilityLabel("\(streakDays) day streak")
@@ -51,7 +55,7 @@ public struct StreakFlameView: View {
 
 #Preview {
     HStack(spacing: 16) {
-        StreakFlameView(streakDays: 7)
+        StreakFlameView(streakDays: 14)
         StreakFlameView(streakDays: 21, isAtRisk: true)
     }
     .padding()

@@ -72,16 +72,7 @@ public struct FriendItem: Identifiable, Codable, Equatable {
     }
 
     public var avatarIconName: String {
-        switch avatarPreset {
-        case "sprinter": return "flame.fill"
-        case "climber": return "figure.climbing"
-        case "cyclist": return "figure.outdoor.cycle"
-        case "zen": return "figure.mind.and.body"
-        case "star": return "star.fill"
-        case "bolt": return "bolt.fill"
-        case "shield": return "shield.fill"
-        default: return "figure.run"
-        }
+        KlymbIconCatalog.avatarIcon(for: avatarPreset)
     }
 
     public var rankTier: RankTier {

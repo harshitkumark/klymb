@@ -2,100 +2,148 @@
 //  ProgressRing.swift
 //  klymb
 //
-//  Circular progress ring matching docs/DESIGN_SYSTEM.md §9.5.
-//  Supports stroke animations and accessibility Reduce Motion.
+//  Circular or open-arc sports-instrument telemetry gauge.
+//  Supports optional outer perimeter tick marks, completion Mint shift, and Reduce Motion.
 //
 
 import SwiftUI
 
 public struct ProgressRing<CenterContent: View>: View {
-    public let progress: Double // 0.0 to 1.0 (or greater)
+    public let progress: Double
     public let size: CGFloat
     public let strokeWidth: CGFloat
+    public let openGauge: Bool
+    public let showTicks: Bool
     public let centerContent: CenterContent
 
     @State private var animatedProgress: Double = 0.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private let openArcSpan: Double = 250.0 / 360.0 // 250-degree sports instrument sweep
 
     public init(
         progress: Double,
         size: CGFloat = 120,
-        strokeWidth: CGFloat = 10,
+        strokeWidth: CGFloat = 8,
+        openGauge: Bool = false,
+        showTicks: Bool = false,
         @ViewBuilder centerContent: () -> CenterContent = { EmptyView() }
     ) {
         self.progress = progress
         self.size = size
         self.strokeWidth = strokeWidth
+        self.openGauge = openGauge
+        self.showTicks = showTicks
         self.centerContent = centerContent()
+    }
+
+    private var isCompleted: Bool {
+        progress >= 1.0
+    }
+
+    private var ringDiameter: CGFloat {
+        showTicks ? max(40, size - 26) : size
     }
 
     public var body: some View {
         ZStack {
+            if showTicks {
+                GaugeTickMarks(
+                    progress: animatedProgress,
+                    size: size,
+                    isCompleted: isCompleted
+                )
+                .accessibilityHidden(true)
+            }
+
             // Track
             Circle()
-                .stroke(Color.KlymbBackground.tertiary, lineWidth: strokeWidth)
-                .frame(width: size, height: size)
-
-            // Progress stroke (first lap up to 100%)
-            Circle()
-                .trim(from: 0, to: CGFloat(min(animatedProgress, 1.0)))
+                .trim(from: 0, to: openGauge ? CGFloat(openArcSpan) : 1.0)
                 .stroke(
-                    KlymbGradient.accent,
+                    Color.KlymbBackground.tertiary,
                     style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
                 )
-                .rotationEffect(.degrees(-90))
-                .frame(width: size, height: size)
+                .rotationEffect(.degrees(openGauge ? 145 : -90))
+                .frame(width: ringDiameter, height: ringDiameter)
 
-            // Over 100%: Second lap in purple accent
-            if animatedProgress > 1.0 {
-                Circle()
-                    .trim(from: 0, to: CGFloat(min(animatedProgress - 1.0, 1.0)))
-                    .stroke(
-                        Color.KlymbAccent.secondary,
-                        style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(-90))
-                    .frame(width: size, height: size)
-            }
+            // Active Fill (Calm Mint when 100%, Warm Terracotta gradient while climbing)
+            Circle()
+                .trim(from: 0, to: CGFloat(min(animatedProgress, 1.0)) * CGFloat(openGauge ? openArcSpan : 1.0))
+                .stroke(
+                    isCompleted ? AnyShapeStyle(Color.KlymbSemantic.success) : AnyShapeStyle(KlymbGradient.accent),
+                    style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(openGauge ? 145 : -90))
+                .frame(width: ringDiameter, height: ringDiameter)
 
-            // Center Content
             centerContent
         }
+        .frame(width: size, height: openGauge ? size * 0.88 : size)
         .onAppear {
-            if UIAccessibility.isReduceMotionEnabled {
-                animatedProgress = progress
-            } else {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    animatedProgress = progress
-                }
-            }
+            updateAnimatedProgress(to: progress)
         }
         .onChange(of: progress) { _, newProgress in
-            if UIAccessibility.isReduceMotionEnabled {
-                animatedProgress = newProgress
-            } else {
-                withAnimation(.easeOut(duration: 0.8)) {
-                    animatedProgress = newProgress
-                }
+            updateAnimatedProgress(to: newProgress)
+        }
+        .accessibilityLabel("\(Int(min(progress, 1.0) * 100)) percent completed")
+    }
+
+    private func updateAnimatedProgress(to target: Double) {
+        if reduceMotion || UIAccessibility.isReduceMotionEnabled {
+            animatedProgress = target
+        } else {
+            withAnimation(.easeOut(duration: 0.7)) {
+                animatedProgress = target
             }
         }
-        .accessibilityLabel("\(Int(progress * 100)) percent completed")
+    }
+}
+
+private struct GaugeTickMarks: View {
+    let progress: Double
+    let size: CGFloat
+    let isCompleted: Bool
+
+    private let tickCount = 36
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<tickCount, id: \.self) { idx in
+                let fraction = Double(idx) / Double(tickCount - 1)
+                let angleDeg = -125.0 + fraction * 250.0
+                let isLit = progress > 0 && fraction <= min(progress, 1.0)
+                let isMajor = idx % 5 == 0
+
+                Capsule()
+                    .fill(
+                        isLit
+                            ? (isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.soft)
+                            : Color.KlymbBorder.default
+                    )
+                    .frame(width: isMajor ? 2.0 : 1.2, height: isMajor ? 7.5 : 4.5)
+                    .offset(y: -(size / 2) + 4)
+                    .rotationEffect(.degrees(angleDeg))
+            }
+        }
+        .frame(width: size, height: size)
     }
 }
 
 #Preview {
     VStack(spacing: 32) {
-        ProgressRing(progress: 0.75, size: 120, strokeWidth: 10) {
-            VStack {
-                Text("75%")
-                    .font(Font.Klymb.titleMedium)
-                Text("KP Cap")
-                    .font(Font.Klymb.caption)
+        ProgressRing(progress: 0.78, size: 196, strokeWidth: 7, openGauge: true, showTicks: true) {
+            VStack(spacing: 2) {
+                Text("KP TODAY")
+                    .font(Font.Klymb.telemetry)
                     .foregroundStyle(Color.KlymbText.secondary)
+                Text("1,247")
+                    .font(.system(size: 46, weight: .heavy).width(.condensed))
+                    .foregroundStyle(Color.KlymbText.primary)
             }
         }
 
-        ProgressRing(progress: 1.25, size: 80, strokeWidth: 8) {
-            Text("125%")
+        ProgressRing(progress: 1.0, size: 100, strokeWidth: 7) {
+            Text("100%")
                 .font(Font.Klymb.headline)
         }
     }

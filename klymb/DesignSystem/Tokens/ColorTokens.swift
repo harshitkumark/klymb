@@ -2,8 +2,8 @@
 //  ColorTokens.swift
 //  klymb
 //
-//  Design System Color Tokens matching docs/DESIGN_SYSTEM.md §2.
-//  Dark mode first, supporting Dynamic Type and contrast accessibility.
+//  Design System Color Tokens — Matte Charcoal, Architectural Grey & Velvet Terracotta.
+//  Calibrated for OLED eye-comfort (~64% accent saturation, zero blue-black halation).
 //
 
 import SwiftUI
@@ -44,98 +44,150 @@ public extension Color {
         })
     }
 
-    // MARK: - Core Palette
+    private static func dynamicColor(light: Color, dark: Color) -> Color {
+        Color(UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .light
+                ? UIColor(light)
+                : UIColor(dark)
+        })
+    }
+
+    // MARK: - Core Palette (Matte Charcoal & Warm Architectural Grey)
     enum KlymbBackground {
-        public static let primary = Color.dynamicColor(lightHex: "FFFFFF", darkHex: "0A0A0F")
-        public static let secondary = Color.dynamicColor(lightHex: "F5F5F7", darkHex: "141420")
-        public static let tertiary = Color.dynamicColor(lightHex: "E8E8ED", darkHex: "1C1C2E")
-        public static let elevated = Color.dynamicColor(lightHex: "FFFFFF", darkHex: "1E1E32")
+        public static let primary = Color.dynamicColor(lightHex: "F6F5F3", darkHex: "111113")
+        public static let secondary = Color.dynamicColor(lightHex: "FFFFFF", darkHex: "18181B")
+        public static let tertiary = Color.dynamicColor(lightHex: "ECEAE6", darkHex: "212125")
+        public static let elevated = Color.dynamicColor(lightHex: "FFFFFF", darkHex: "26262B")
     }
 
     enum KlymbText {
-        public static let primary = Color.dynamicColor(lightHex: "1A1A1A", darkHex: "F0F0F5")
-        public static let secondary = Color.dynamicColor(lightHex: "6B6B80", darkHex: "8E8EA0")
-        public static let tertiary = Color.dynamicColor(lightHex: "9B9BAD", darkHex: "5C5C6E")
-        public static let inverse = Color.dynamicColor(lightHex: "F0F0F5", darkHex: "0A0A0F")
+        public static let primary = Color.dynamicColor(lightHex: "141316", darkHex: "F3F2EF")
+        public static let secondary = Color.dynamicColor(lightHex: "66646B", darkHex: "94939B")
+        public static let tertiary = Color.dynamicColor(lightHex: "99979E", darkHex: "5E5D64")
+        public static let inverse = Color.dynamicColor(lightHex: "FFFFFF", darkHex: "111113")
     }
 
     enum KlymbBorder {
-        public static let `default` = Color.dynamicColor(lightHex: "E0E0E8", darkHex: "2A2A3D")
-        public static let subtle = Color.dynamicColor(lightHex: "F0F0F5", darkHex: "1E1E32")
+        public static let `default` = Color.dynamicColor(
+            light: Color(hex: "141316", opacity: 0.09),
+            dark: Color.white.opacity(0.08)
+        )
+        public static let subtle = Color.dynamicColor(
+            light: Color(hex: "141316", opacity: 0.06),
+            dark: Color.white.opacity(0.055)
+        )
+        public static let specularTop = Color.dynamicColor(
+            light: Color.white.opacity(0.90),
+            dark: Color.white.opacity(0.11)
+        )
+        public static let specularBottom = Color.dynamicColor(
+            light: Color(hex: "141316", opacity: 0.06),
+            dark: Color.white.opacity(0.025)
+        )
     }
 
-    // MARK: - Accents
+    // MARK: - Accents (Low-Glare Velvet Terracotta & Soft Copper)
     enum KlymbAccent {
-        /// Electric Cyan: Primary actions, KP counter, Klymb brand signature
-        public static let primary = Color(hex: "00E5FF")
-        /// Electric Cyan at 20% opacity for selections & subtle glows
-        public static let primaryMuted = Color(hex: "00E5FF", opacity: 0.20)
-        /// Vivid Purple: Secondary highlights, challenges, teams
-        public static let secondary = Color(hex: "7B61FF")
+        /// Velvet Terracotta (~64% saturation): active progress, streaks, focus cues
+        public static let primary = Color.dynamicColor(lightHex: "D95326", darkHex: "D9683E")
+        /// Warm Soft Copper for highlights, ranks 4-10, subtle telemetry emphasis
+        public static let soft = Color.dynamicColor(lightHex: "E3683B", darkHex: "E38D64")
+        /// Muted Terracotta tint for pills, selected surfaces, subtle glow
+        public static let primaryMuted = Color.dynamicColor(
+            light: Color(hex: "D95326", opacity: 0.12),
+            dark: Color(hex: "D9683E", opacity: 0.14)
+        )
+        /// Secondary accent harmonized with warm copper family
+        public static let secondary = Color.dynamicColor(lightHex: "B84A24", darkHex: "E38D64")
+        /// Calm high-contrast Bone White CTA fill in Dark Mode / Deep Charcoal in Light Mode
+        public static let boneCTA = Color.dynamicColor(lightHex: "141316", darkHex: "F2F1EE")
+        /// Disabled CTA fill with legible ink contrast
+        public static let disabledSurface = Color.dynamicColor(lightHex: "E3E1DC", darkHex: "202024")
+        public static let disabledText = Color.dynamicColor(lightHex: "9A989E", darkHex: "65646B")
     }
 
     // MARK: - Semantic Colors
     enum KlymbSemantic {
-        public static let success = Color(hex: "00D68F")
-        public static let warning = Color(hex: "FFB800")
-        public static let error = Color(hex: "FF3D71")
-        public static let info = Color(hex: "00B4D8")
+        /// Calm Mint exclusively for 100% completed goals, verified status, upward rank delta
+        public static let success = Color.dynamicColor(lightHex: "129E5E", darkHex: "45C486")
+        /// Warm Sandstone Amber for caution / cooldowns / rewards
+        public static let warning = Color.dynamicColor(lightHex: "D9822B", darkHex: "E09850")
+        /// Muted Coral Crimson for errors / downward delta / destructive actions
+        public static let error = Color.dynamicColor(lightHex: "DC2626", darkHex: "E5586A")
+        /// Cool Slate for informational state
+        public static let info = Color.dynamicColor(lightHex: "475569", darkHex: "8E99A8")
     }
 
     // MARK: - Leaderboard Tier Colors
     enum KlymbRank {
-        public static let gold = Color(hex: "FFD700")
-        public static let silver = Color(hex: "C0C0C0")
-        public static let bronze = Color(hex: "CD7F32")
-        public static let elite = Color(hex: "00E5FF")
+        public static let gold = Color.dynamicColor(lightHex: "C9971E", darkHex: "E6B84C")
+        public static let silver = Color.dynamicColor(lightHex: "7E828C", darkHex: "B8B8C2")
+        public static let bronze = Color.dynamicColor(lightHex: "A66942", darkHex: "C4845C")
+        public static let elite = Color.KlymbAccent.soft
     }
 }
 
-// MARK: - Gradients (DESIGN_SYSTEM.md §2.4)
+// MARK: - Gradients
 public enum KlymbGradient {
-    /// CTA buttons, KP counter glow, achievement unlock (Cyan → Purple, 45°)
+    /// Active effort gradient (Velvet Terracotta → Soft Copper)
     public static let accent = LinearGradient(
-        colors: [Color.KlymbAccent.primary, Color.KlymbAccent.secondary],
+        colors: [Color.KlymbAccent.primary, Color.KlymbAccent.soft],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    /// Streak flame, hot streaks (Orange → Amber, vertical)
+    /// Streak & peak effort gradient
     public static let fire = LinearGradient(
-        colors: [Color(hex: "FF6B00"), Color(hex: "FFB800")],
+        colors: [Color.KlymbAccent.primary, Color(hex: "E59D68")],
         startPoint: .bottom,
         endPoint: .top
     )
 
-    /// Card backgrounds with subtle depth
+    /// Subtle elevated charcoal surface sheen
     public static let card = LinearGradient(
-        colors: [Color(hex: "1E1E32"), Color(hex: "141420")],
+        colors: [Color.KlymbBackground.tertiary, Color.KlymbBackground.secondary],
         startPoint: .top,
         endPoint: .bottom
     )
 
-    /// Rank celebration (Gold → Orange)
+    /// Rank 1 warmth gradient
     public static let rank = LinearGradient(
-        colors: [Color.KlymbRank.gold, Color(hex: "FF6B00")],
+        colors: [Color.KlymbRank.gold, Color.KlymbAccent.primary],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    /// Directional top-edge hairline lighting gradient for borders
+    public static let specularBorder = LinearGradient(
+        colors: [Color.KlymbBorder.specularTop, Color.KlymbBorder.specularBottom],
+        startPoint: .top,
+        endPoint: .bottom
+    )
 }
 
-// MARK: - Direct Token Aliases
+// MARK: - Direct Token Aliases (Backwards-compatible across existing views/models)
 public enum ColorTokens {
     public static let backgroundPrimary = Color.KlymbBackground.primary
     public static let backgroundSecondary = Color.KlymbBackground.secondary
     public static let backgroundTertiary = Color.KlymbBackground.tertiary
+    public static let surfaceElevated = Color.KlymbBackground.elevated
     public static let textPrimary = Color.KlymbText.primary
     public static let textSecondary = Color.KlymbText.secondary
     public static let textTertiary = Color.KlymbText.tertiary
+    public static let textInverse = Color.KlymbText.inverse
     public static let borderDefault = Color.KlymbBorder.default
     public static let borderSubtle = Color.KlymbBorder.subtle
+
+    // Cohesive Terracotta/Copper Palette Aliases
+    public static let terracotta = Color.KlymbAccent.primary
+    public static let softCopper = Color.KlymbAccent.soft
+    public static let boneCTA = Color.KlymbAccent.boneCTA
+
+    // Legacy token names preserved and mapped cleanly to the new palette
     public static let electricCyan = Color.KlymbAccent.primary
-    public static let neonPurple = Color.KlymbAccent.secondary
+    public static let neonPurple = Color.KlymbAccent.soft
     public static let neonGreen = Color.KlymbSemantic.success
     public static let neonYellow = Color.KlymbSemantic.warning
-    public static let neonOrange = Color(hex: "FF6B00")
+    public static let neonOrange = Color.KlymbAccent.primary
     public static let neonRed = Color.KlymbSemantic.error
 }

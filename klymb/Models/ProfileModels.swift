@@ -31,8 +31,8 @@ public enum RankTier: String, CaseIterable, Identifiable {
         case .bronze: return Color.KlymbRank.bronze
         case .silver: return Color.KlymbRank.silver
         case .gold: return Color.KlymbRank.gold
-        case .platinum: return ColorTokens.electricCyan
-        case .diamond: return ColorTokens.neonPurple
+        case .platinum: return Color.KlymbAccent.primary
+        case .diamond: return Color.KlymbAccent.soft
         }
     }
 
@@ -84,7 +84,7 @@ public extension Achievement {
         case "bronze": return Color.KlymbRank.bronze
         case "silver": return Color.KlymbRank.silver
         case "gold": return Color.KlymbRank.gold
-        case "platinum", "diamond": return ColorTokens.electricCyan
+        case "platinum", "diamond": return Color.KlymbAccent.soft
         default: return ColorTokens.textTertiary
         }
     }

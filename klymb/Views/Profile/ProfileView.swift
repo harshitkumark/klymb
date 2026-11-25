@@ -2,9 +2,8 @@
 //  ProfileView.swift
 //  klymb
 //
-//  Profile Tab: Athlete Card, Rank Tier Progress, Lifetime Stats,
-//  and Achievements Showcase Grid (PRD §F11 & Design System §9.9).
-//  Follows AGENTS.md Rules 1, 2, 15, 18.
+//  Profile Tab: Horizontal Athlete Pass, Tier Progression, 2x2 Bento Stats,
+//  Achievements Showcase Grid, and Account Navigation.
 //
 
 import SwiftUI
@@ -14,7 +13,6 @@ public struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
     @State private var showNotificationPreferences: Bool = false
     @State private var showSettings: Bool = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let container: AppContainerProtocol
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
@@ -24,69 +22,67 @@ public struct ProfileView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: LayoutTokens.spacingL) {
-                    // 1. Hero Athlete Card & Tier Progression
-                    ProfileHeroCard(viewModel: viewModel)
-                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                        .padding(.top, LayoutTokens.spacingS)
+            ZStack {
+                Color.KlymbBackground.primary.ignoresSafeArea()
 
-                    // 2. Core Stats 2x2 Grid
-                    ProfileStatsGrid(viewModel: viewModel)
-                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: KlymbSpacing.lg) {
+                        // 1. Top Header with Notifications & Settings
+                        HStack(alignment: .center) {
+                            Text("Profile")
+                                .font(Font.Klymb.titleLarge)
+                                .foregroundStyle(Color.KlymbText.primary)
 
-                    // 3. Achievements Showcase Section
-                    AchievementsShowcaseSection(viewModel: viewModel)
-                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                            Spacer()
 
-                    // 4. Account Actions
-                    ProfileAccountSection(
-                        appState: appState,
-                        onOpenNotifications: {
-                            showNotificationPreferences = true
-                        },
-                        onOpenSettings: {
-                            showSettings = true
+                            HStack(spacing: KlymbSpacing.sm) {
+                                HeaderCircleButton(
+                                    icon: "bell.badge",
+                                    accessibilityLabel: "Notification Settings"
+                                ) {
+                                    showNotificationPreferences = true
+                                }
+
+                                HeaderCircleButton(
+                                    icon: "gearshape.fill",
+                                    accessibilityLabel: "App Settings"
+                                ) {
+                                    showSettings = true
+                                }
+                            }
                         }
-                    )
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                        .padding(.top, LayoutTokens.spacingM)
+                        .padding(.top, KlymbSpacing.sm)
 
-                    Spacer(minLength: 40)
-                }
-                .padding(.bottom, LayoutTokens.spacingXXL)
-            }
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(ColorTokens.backgroundPrimary, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: LayoutTokens.spacingM) {
-                        Button {
-                            showNotificationPreferences = true
-                        } label: {
-                            Image(systemName: "bell.badge")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(ColorTokens.textPrimary)
-                        }
-                        .accessibilityLabel("Notification Settings")
+                        // 2. Athlete Pass Identity Card
+                        ProfileHeroCard(viewModel: viewModel)
+                            .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
-                        Button {
-                            showSettings = true
-                        } label: {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(ColorTokens.textPrimary)
-                        }
-                        .accessibilityLabel("App Settings")
+                        // 3. 2x2 Stats Bento Grid
+                        ProfileStatsGrid(viewModel: viewModel)
+                            .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        // 4. Achievements Showcase
+                        AchievementsShowcaseSection(viewModel: viewModel)
+                            .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        // 5. Unified Account Actions
+                        ProfileAccountSection(
+                            appState: appState,
+                            onOpenNotifications: { showNotificationPreferences = true },
+                            onOpenSettings: { showSettings = true }
+                        )
+                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        Spacer(minLength: KlymbSpacing.xl)
                     }
+                    .padding(.bottom, KlymbSpacing.xl)
+                }
+                .refreshable {
+                    await viewModel.loadProfile()
                 }
             }
-            .refreshable {
-                await viewModel.loadProfile()
-            }
+            .toolbar(.hidden, for: .navigationBar)
             .task {
                 await viewModel.loadProfile()
             }
@@ -107,237 +103,225 @@ public struct ProfileView: View {
     }
 }
 
-// MARK: - 1. Hero Athlete Card
+private struct HeaderCircleButton: View {
+    let icon: String
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                Circle()
+                    .fill(Color.KlymbBackground.secondary)
+                    .frame(width: 38, height: 38)
+                    .overlay(
+                        Circle().strokeBorder(KlymbGradient.specularBorder, lineWidth: 1)
+                    )
+
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.KlymbText.primary)
+            }
+        }
+        .buttonStyle(KlymbPressableButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
+
+// MARK: - 1. Athlete Pass Card
 private struct ProfileHeroCard: View {
     @ObservedObject var viewModel: ProfileViewModel
 
     var body: some View {
-        VStack(spacing: LayoutTokens.spacingM) {
-            // Avatar with Tier Ring
-            ZStack {
-                Circle()
-                    .fill(ColorTokens.backgroundTertiary)
-                    .frame(width: 90, height: 90)
+        VStack(spacing: KlymbSpacing.lg) {
+            HStack(spacing: KlymbSpacing.md) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                        .fill(Color.KlymbAccent.primaryMuted)
+                        .frame(width: 68, height: 68)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                                .strokeBorder(viewModel.rankTier.tierColor.opacity(0.7), lineWidth: 1.5)
+                        )
 
-                Image(systemName: avatarIcon(for: viewModel.profile?.avatarPreset))
-                    .font(.system(size: 42))
-                    .foregroundStyle(viewModel.rankTier.tierColor)
-
-                // Tier badge overlay
-                Image(systemName: viewModel.rankTier.iconName)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color.black)
-                    .padding(5)
-                    .background(viewModel.rankTier.tierColor)
-                    .clipShape(Circle())
-                    .offset(x: 32, y: 32)
-            }
-            .overlay(
-                Circle()
-                    .strokeBorder(viewModel.rankTier.tierColor.opacity(0.8), lineWidth: 2.5)
-            )
-
-            // Names & City
-            VStack(spacing: 4) {
-                Text(viewModel.profile?.displayName ?? viewModel.profile?.title ?? "Athlete")
-                    .font(TypographyTokens.title2)
-                    .foregroundStyle(ColorTokens.textPrimary)
-
-                Text("@\(viewModel.profile?.username ?? "athlete")")
-                    .font(TypographyTokens.subheadline)
-                    .foregroundStyle(ColorTokens.textTertiary)
-
-                if let city = viewModel.profile?.cityName {
-                    HStack(spacing: 4) {
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 11))
-                        Text(city)
-                            .font(TypographyTokens.caption1)
-                    }
-                    .foregroundStyle(ColorTokens.electricCyan)
-                    .padding(.top, 2)
+                    Image(systemName: KlymbIconCatalog.avatarIcon(for: viewModel.profile?.avatarPreset))
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(viewModel.rankTier.tierColor)
                 }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(viewModel.profile?.displayName ?? viewModel.profile?.title ?? "Athlete")
+                        .font(Font.Klymb.titleSmall)
+                        .foregroundStyle(Color.KlymbText.primary)
+                        .lineLimit(1)
+
+                    HStack(spacing: 5) {
+                        Text("@\(viewModel.profile?.username ?? "athlete")")
+                        if let city = viewModel.profile?.cityName {
+                            Text("• \(city)")
+                        }
+                    }
+                    .font(Font.Klymb.caption)
+                    .foregroundStyle(Color.KlymbText.secondary)
+                    .lineLimit(1)
+
+                    HStack(spacing: 5) {
+                        Image(systemName: viewModel.rankTier.iconName)
+                            .font(.system(size: 10, weight: .bold))
+                        Text(viewModel.rankTier.rawValue)
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundStyle(viewModel.rankTier.tierColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(viewModel.rankTier.tierColor.opacity(0.14))
+                    .clipShape(Capsule())
+                    .padding(.top, 4)
+                }
+
+                Spacer(minLength: 0)
             }
 
-            // Tier Rank Tag
-            HStack(spacing: 6) {
-                Image(systemName: viewModel.rankTier.iconName)
-                    .font(.system(size: 12, weight: .bold))
-                Text(viewModel.rankTier.rawValue.uppercased())
-                    .font(.system(size: 11, weight: .heavy))
-            }
-            .foregroundStyle(viewModel.rankTier.tierColor)
-            .padding(.horizontal, LayoutTokens.paddingM)
-            .padding(.vertical, 6)
-            .background(viewModel.rankTier.tierColor.opacity(0.15))
-            .clipShape(Capsule())
-
-            // Tier Progress Bar
+            // Clean Tier Progress Bar
             VStack(spacing: 6) {
                 HStack {
-                    Text("\(viewModel.totalKP) KP")
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                        .foregroundStyle(ColorTokens.textPrimary)
+                    Text("\(viewModel.totalKP.formatted()) KP")
+                        .font(Font.Klymb.telemetry)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.KlymbText.primary)
 
                     Spacer()
 
-                    if let next = viewModel.rankTier.nextTierThreshold {
-                        Text("\(next) KP")
-                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(ColorTokens.textTertiary)
+                    if let delta = viewModel.kpToNextTier, let next = viewModel.rankTier.nextTierThreshold {
+                        Text("\(delta.formatted()) KP to \(next.formatted())")
+                            .font(Font.Klymb.telemetry)
+                            .monospacedDigit()
+                            .foregroundStyle(Color.KlymbText.secondary)
+                    } else {
+                        Text("MAX TIER")
+                            .font(Font.Klymb.telemetry)
+                            .foregroundStyle(Color.KlymbAccent.soft)
                     }
                 }
 
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(ColorTokens.backgroundTertiary)
-                            .frame(height: 8)
-
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(
-                                LinearGradient(
-                                    colors: [viewModel.rankTier.tierColor, ColorTokens.electricCyan],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(width: geo.size.width * CGFloat(viewModel.tierProgressRatio), height: 8)
-                    }
-                }
-                .frame(height: 8)
-
-                if let delta = viewModel.kpToNextTier {
-                    Text("⚡️ \(delta) KP to reach next rank tier")
-                        .font(TypographyTokens.caption2)
-                        .foregroundStyle(ColorTokens.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 2)
-                }
+                KlymbProgressBar(
+                    progress: viewModel.tierProgressRatio,
+                    height: 5,
+                    fillOverride: LinearGradient(
+                        colors: [viewModel.rankTier.tierColor, Color.KlymbAccent.soft],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
             }
-            .padding(.top, 4)
         }
-        .padding(LayoutTokens.paddingL)
+        .padding(KlymbSpacing.lg)
         .background(
-            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                .fill(ColorTokens.backgroundSecondary)
+            LinearGradient(
+                colors: [
+                    Color.KlymbAccent.primary.opacity(0.11),
+                    Color.KlymbBackground.secondary
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         )
+        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.xl, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                .strokeBorder(viewModel.rankTier.tierColor.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: KlymbRadius.xl, style: .continuous)
+                .strokeBorder(Color.KlymbAccent.primary.opacity(0.28), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(viewModel.profile?.displayName ?? "Champion"), \(viewModel.rankTier.rawValue), \(viewModel.totalKP) Total KP")
-    }
-
-    private func avatarIcon(for preset: String?) -> String {
-        switch preset {
-        case "sprinter": return "flame.fill"
-        case "climber": return "figure.climbing"
-        case "cyclist": return "figure.outdoor.cycle"
-        case "zen": return "figure.mind.and.body"
-        case "star": return "star.fill"
-        case "bolt": return "bolt.fill"
-        default: return "figure.run"
-        }
+        .accessibilityLabel("\(viewModel.profile?.displayName ?? "Athlete"), \(viewModel.rankTier.rawValue), \(viewModel.totalKP) Total KP")
     }
 }
 
-// MARK: - 2. Core Stats Grid
+// MARK: - 2. 2x2 Bento Stats Grid
 private struct ProfileStatsGrid: View {
     @ObservedObject var viewModel: ProfileViewModel
 
     var body: some View {
-        VStack(spacing: LayoutTokens.spacingM) {
-            HStack(spacing: LayoutTokens.spacingM) {
+        VStack(spacing: KlymbSpacing.md) {
+            HStack(spacing: KlymbSpacing.md) {
                 StatTile(
                     icon: "bolt.fill",
-                    value: "\(viewModel.totalKP) KP",
-                    label: "TOTAL SCORE",
-                    valueColor: ColorTokens.electricCyan
+                    value: "\(viewModel.totalKP.formatted()) KP",
+                    label: "Lifetime Score",
+                    valueColor: Color.KlymbAccent.soft
                 )
 
                 StatTile(
                     icon: "flame.fill",
-                    value: "\(viewModel.streak.currentStreak) Days",
-                    label: "CURRENT STREAK",
-                    valueColor: ColorTokens.neonOrange
+                    value: "\(viewModel.streak.currentStreak)d",
+                    label: "Current Streak",
+                    valueColor: Color.KlymbAccent.primary
                 )
             }
 
-            HStack(spacing: LayoutTokens.spacingM) {
+            HStack(spacing: KlymbSpacing.md) {
                 StatTile(
                     icon: "trophy.fill",
-                    value: "\(viewModel.streak.longestStreak) Days",
-                    label: "BEST STREAK",
+                    value: "\(viewModel.streak.longestStreak)d",
+                    label: "Best Streak",
                     valueColor: Color.KlymbRank.gold
                 )
 
                 StatTile(
                     icon: "rosette",
                     value: "\(viewModel.unlockedCount) / \(viewModel.achievements.count)",
-                    label: "BADGES WON",
-                    valueColor: ColorTokens.neonPurple
+                    label: "Achievements",
+                    valueColor: Color.KlymbText.secondary
                 )
             }
         }
     }
 }
 
-// MARK: - 3. Achievements Showcase Section
+// MARK: - 3. Achievements Showcase
 private struct AchievementsShowcaseSection: View {
     @ObservedObject var viewModel: ProfileViewModel
 
     private let columns = [
-        GridItem(.flexible(), spacing: LayoutTokens.spacingM),
-        GridItem(.flexible(), spacing: LayoutTokens.spacingM)
+        GridItem(.flexible(), spacing: KlymbSpacing.md),
+        GridItem(.flexible(), spacing: KlymbSpacing.md)
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-            // Header Title
-            HStack {
-                Text("ACHIEVEMENT BADGES")
-                    .font(TypographyTokens.caption1.bold())
-                    .foregroundStyle(ColorTokens.textTertiary)
+        VStack(alignment: .leading, spacing: KlymbSpacing.md) {
+            KlymbSectionHeader(
+                "Achievements",
+                trailingText: "\(viewModel.unlockedCount) UNLOCKED",
+                trailingColor: Color.KlymbAccent.soft
+            )
 
-                Spacer()
+            // Underlined Filter Strip
+            VStack(spacing: 0) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: KlymbSpacing.lg) {
+                        ForEach(AchievementCategoryFilter.allCases) { filter in
+                            let isSelected = (filter == viewModel.selectedFilter)
 
-                Text("\(viewModel.unlockedCount) UNLOCKED")
-                    .font(TypographyTokens.caption2)
-                    .foregroundStyle(ColorTokens.electricCyan)
-            }
+                            Button {
+                                viewModel.setFilter(filter)
+                            } label: {
+                                VStack(spacing: 7) {
+                                    Text(filter.title)
+                                        .font(Font.Klymb.caption.weight(.semibold))
+                                        .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
 
-            // Category Filter Pills
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: LayoutTokens.spacingS) {
-                    ForEach(AchievementCategoryFilter.allCases) { filter in
-                        let isSelected = (filter == viewModel.selectedFilter)
-
-                        Button {
-                            viewModel.setFilter(filter)
-                        } label: {
-                            Text(filter.title)
-                                .font(TypographyTokens.caption1.weight(.semibold))
-                                .padding(.horizontal, LayoutTokens.paddingM)
-                                .padding(.vertical, 6)
-                                .background(
-                                    Capsule()
-                                        .fill(isSelected ? ColorTokens.electricCyan.opacity(0.18) : ColorTokens.backgroundSecondary)
-                                )
-                                .overlay(
-                                    Capsule()
-                                        .strokeBorder(isSelected ? ColorTokens.electricCyan : ColorTokens.borderSubtle, lineWidth: 1)
-                                )
-                                .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textSecondary)
+                                    Rectangle()
+                                        .fill(isSelected ? Color.KlymbAccent.primary : Color.clear)
+                                        .frame(height: 2)
+                                }
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
+                Divider().background(Color.KlymbBorder.subtle)
             }
 
-            // Grid of Badges
-            LazyVGrid(columns: columns, spacing: LayoutTokens.spacingM) {
+            LazyVGrid(columns: columns, spacing: KlymbSpacing.md) {
                 ForEach(viewModel.filteredAchievements) { achievement in
                     AchievementCard(achievement: achievement) {
                         viewModel.selectAchievement(achievement)
@@ -348,77 +332,58 @@ private struct AchievementsShowcaseSection: View {
     }
 }
 
-// MARK: - Achievement Card
 private struct AchievementCard: View {
     let achievement: Achievement
     let onTap: () -> Void
 
     var body: some View {
-        Button {
-            onTap()
-        } label: {
-            VStack(spacing: LayoutTokens.spacingS) {
-                // Badge Icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                        .fill(achievement.isUnlocked ? achievement.tierColor.opacity(0.18) : ColorTokens.backgroundTertiary)
-                        .frame(width: 58, height: 58)
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+                HStack {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: KlymbRadius.sm, style: .continuous)
+                            .fill(achievement.isUnlocked ? Color.KlymbAccent.primaryMuted : Color.KlymbBackground.tertiary)
+                            .frame(width: 34, height: 34)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: KlymbRadius.sm, style: .continuous)
+                                    .strokeBorder(
+                                        achievement.isUnlocked ? achievement.tierColor.opacity(0.45) : Color.KlymbBorder.subtle,
+                                        lineWidth: 1
+                                    )
+                            )
 
-                    Image(systemName: achievement.iconName)
-                        .font(.system(size: 26))
-                        .foregroundStyle(achievement.isUnlocked ? achievement.tierColor : ColorTokens.textTertiary)
-
-                    if !achievement.isUnlocked {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(ColorTokens.textTertiary)
-                            .offset(x: 20, y: 20)
+                        Image(systemName: achievement.isUnlocked ? achievement.iconName : "lock.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(achievement.isUnlocked ? achievement.tierColor : Color.KlymbText.tertiary)
                     }
-                }
-                .overlay(
-                    RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                        .strokeBorder(
-                            achievement.isUnlocked ? achievement.tierColor.opacity(0.6) : ColorTokens.borderSubtle,
-                            lineWidth: achievement.isUnlocked ? 1.5 : 1
-                        )
-                )
 
-                // Title
-                Text(achievement.displayName)
-                    .font(TypographyTokens.caption1.bold())
-                    .foregroundStyle(achievement.isUnlocked ? ColorTokens.textPrimary : ColorTokens.textSecondary)
-                    .lineLimit(1)
+                    Spacer()
 
-                // Reward & Tier
-                HStack(spacing: 4) {
                     Text("+\(achievement.rewardKP) KP")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(achievement.isUnlocked ? Color.KlymbRank.gold : ColorTokens.textTertiary)
+                        .font(Font.Klymb.telemetry)
+                        .foregroundStyle(achievement.isUnlocked ? Color.KlymbAccent.soft : Color.KlymbText.tertiary)
+                }
 
-                    Text("•")
-                        .font(.system(size: 8))
-                        .foregroundStyle(ColorTokens.textTertiary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(achievement.displayName)
+                        .font(Font.Klymb.caption.weight(.semibold))
+                        .foregroundStyle(achievement.isUnlocked ? Color.KlymbText.primary : Color.KlymbText.secondary)
+                        .lineLimit(1)
 
-                    Text(achievement.tier.capitalized)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(achievement.tierColor)
+                    Text("\(achievement.tier.capitalized) Tier")
+                        .font(Font.Klymb.captionSmall)
+                        .foregroundStyle(Color.KlymbText.tertiary)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(LayoutTokens.paddingM)
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
+            .padding(KlymbSpacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .klymbCardStyle(
+                cornerRadius: KlymbRadius.lg,
+                isElevated: achievement.isUnlocked
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(
-                        achievement.isUnlocked ? achievement.tierColor.opacity(0.3) : ColorTokens.borderSubtle,
-                        lineWidth: 1
-                    )
-            )
+            .opacity(achievement.isUnlocked ? 1.0 : 0.65)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KlymbPressableButtonStyle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(achievement.displayName), \(achievement.tier) tier badge, \(achievement.isUnlocked ? "unlocked" : "locked"), reward \(achievement.rewardKP) KP")
     }
@@ -431,56 +396,53 @@ private struct AchievementDetailSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: LayoutTokens.spacingL) {
-                // Large Badge
+            VStack(spacing: KlymbSpacing.lg) {
                 ZStack {
                     Circle()
-                        .fill(achievement.isUnlocked ? achievement.tierColor.opacity(0.18) : ColorTokens.backgroundTertiary)
-                        .frame(width: 88, height: 88)
+                        .fill(achievement.isUnlocked ? achievement.tierColor.opacity(0.16) : Color.KlymbBackground.tertiary)
+                        .frame(width: 84, height: 84)
 
                     Image(systemName: achievement.iconName)
-                        .font(.system(size: 40))
-                        .foregroundStyle(achievement.isUnlocked ? achievement.tierColor : ColorTokens.textTertiary)
+                        .font(.system(size: 36, weight: .semibold))
+                        .foregroundStyle(achievement.isUnlocked ? achievement.tierColor : Color.KlymbText.tertiary)
                 }
                 .overlay(
                     Circle()
-                        .strokeBorder(achievement.isUnlocked ? achievement.tierColor : ColorTokens.borderSubtle, lineWidth: 2)
+                        .strokeBorder(achievement.isUnlocked ? achievement.tierColor.opacity(0.8) : Color.KlymbBorder.default, lineWidth: 2)
                 )
-                .padding(.top, LayoutTokens.spacingM)
+                .padding(.top, KlymbSpacing.md)
 
-                // Title & Tier
                 VStack(spacing: 6) {
                     Text("\(achievement.tier.uppercased()) BADGE")
-                        .font(.system(size: 11, weight: .black))
+                        .font(Font.Klymb.telemetry)
                         .foregroundStyle(achievement.tierColor)
 
                     Text(achievement.displayName)
-                        .font(TypographyTokens.title2)
-                        .foregroundStyle(ColorTokens.textPrimary)
+                        .font(Font.Klymb.titleSmall)
+                        .foregroundStyle(Color.KlymbText.primary)
 
                     if let desc = achievement.description {
                         Text(desc)
-                            .font(TypographyTokens.body)
-                            .foregroundStyle(ColorTokens.textSecondary)
+                            .font(Font.Klymb.bodySmall)
+                            .foregroundStyle(Color.KlymbText.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                     }
                 }
 
-                // Reward & Status
-                HStack(spacing: LayoutTokens.spacingM) {
+                HStack(spacing: KlymbSpacing.md) {
                     StatTile(
                         icon: "trophy.fill",
                         value: "+\(achievement.rewardKP) KP",
-                        label: "REWARD",
+                        label: "Reward",
                         valueColor: Color.KlymbRank.gold
                     )
 
                     StatTile(
                         icon: achievement.isUnlocked ? "checkmark.circle.fill" : "lock.fill",
-                        value: achievement.isUnlocked ? "UNLOCKED" : "LOCKED",
-                        label: "STATUS",
-                        valueColor: achievement.isUnlocked ? ColorTokens.neonGreen : ColorTokens.textTertiary
+                        value: achievement.isUnlocked ? "Unlocked" : "Locked",
+                        label: "Status",
+                        valueColor: achievement.isUnlocked ? Color.KlymbSemantic.success : Color.KlymbText.tertiary
                     )
                 }
                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
@@ -491,89 +453,51 @@ private struct AchievementDetailSheet: View {
                     onClose()
                 }
                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                .padding(.bottom, LayoutTokens.spacingM)
+                .padding(.bottom, KlymbSpacing.md)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
+            .background(Color.KlymbBackground.primary.ignoresSafeArea())
             .navigationTitle("Achievement")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Close", action: onClose)
-                        .foregroundStyle(ColorTokens.electricCyan)
+                        .foregroundStyle(Color.KlymbAccent.soft)
                 }
             }
         }
     }
 }
 
-// MARK: - 4. Account Actions
+// MARK: - 4. Unified Account Actions
 private struct ProfileAccountSection: View {
     @ObservedObject var appState: AppState
     let onOpenNotifications: () -> Void
     let onOpenSettings: () -> Void
 
     var body: some View {
-        VStack(spacing: LayoutTokens.spacingM) {
-            Button(action: onOpenSettings) {
-                HStack(spacing: LayoutTokens.spacingM) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(ColorTokens.electricCyan)
-                        .frame(width: 24)
+        VStack(alignment: .leading, spacing: KlymbSpacing.md) {
+            KlymbSectionHeader("Account")
 
-                    Text("Settings & Privacy")
-                        .font(TypographyTokens.subheadline.weight(.semibold))
-                        .foregroundStyle(ColorTokens.textPrimary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(ColorTokens.textTertiary)
-                }
-                .padding(.horizontal, LayoutTokens.paddingM)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(ColorTokens.backgroundSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                        .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
+            KlymbGroupedSurface {
+                AccountRowButton(
+                    icon: "gearshape.fill",
+                    title: "Settings & Privacy",
+                    action: onOpenSettings
                 )
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Open Settings and Privacy")
+                .accessibilityLabel("Open Settings and Privacy")
 
-            Button(action: onOpenNotifications) {
-                HStack(spacing: LayoutTokens.spacingM) {
-                    Image(systemName: "bell.badge.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(ColorTokens.electricCyan)
-                        .frame(width: 24)
+                Divider()
+                    .background(Color.KlymbBorder.subtle)
+                    .padding(.leading, 48)
 
-                    Text("Push Notifications")
-                        .font(TypographyTokens.subheadline.weight(.semibold))
-                        .foregroundStyle(ColorTokens.textPrimary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(ColorTokens.textTertiary)
-                }
-                .padding(.horizontal, LayoutTokens.paddingM)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(ColorTokens.backgroundSecondary)
-                .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                        .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
+                AccountRowButton(
+                    icon: "bell.badge.fill",
+                    title: "Push Notifications",
+                    action: onOpenNotifications
                 )
+                .accessibilityLabel("Open Push Notification Preferences")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Open Push Notification Preferences")
 
             Button(role: .destructive) {
                 Task {
@@ -582,25 +506,58 @@ private struct ProfileAccountSection: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
-                    Text("Sign Out (Switch Account)")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Sign Out")
                 }
-                .font(TypographyTokens.subheadline.bold())
+                .font(Font.Klymb.bodySmall.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                .background(ColorTokens.neonRed.opacity(0.12))
-                .foregroundStyle(ColorTokens.neonRed)
-                .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusL))
+                .frame(minHeight: 48)
+                .background(Color.KlymbSemantic.error.opacity(0.10))
+                .foregroundStyle(Color.KlymbSemantic.error)
+                .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                        .strokeBorder(ColorTokens.neonRed.opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                        .strokeBorder(Color.KlymbSemantic.error.opacity(0.28), lineWidth: 1)
                 )
             }
-            .buttonStyle(.plain)
+            .buttonStyle(KlymbPressableButtonStyle())
 
             Text("Klymb iOS • v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0") (Build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
-                .font(TypographyTokens.caption2)
-                .foregroundStyle(ColorTokens.textTertiary)
+                .font(Font.Klymb.captionSmall)
+                .foregroundStyle(Color.KlymbText.tertiary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
+    }
+}
+
+private struct AccountRowButton: View {
+    let icon: String
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: KlymbSpacing.md) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.KlymbAccent.soft)
+                    .frame(width: 24)
+
+                Text(title)
+                    .font(Font.Klymb.bodySmall.weight(.semibold))
+                    .foregroundStyle(Color.KlymbText.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.KlymbText.tertiary)
+            }
+            .padding(.horizontal, KlymbSpacing.lg)
+            .padding(.vertical, 15)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 

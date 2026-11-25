@@ -2,9 +2,8 @@
 //  ChallengesView.swift
 //  klymb
 //
-//  Challenges Tab: Daily, Weekly & Community Quests with Live Progress,
-//  KP Rewards, and Detail Sheet (PRD §F12 & Design System §9.8).
-//  Follows AGENTS.md Rules 2, 15, 18.
+//  Challenges Tab: Daily, Weekly & Community Quests with Thermal Effort hierarchy,
+//  crisp vector progress bars, and interactive detail sheet.
 //
 
 import SwiftUI
@@ -12,7 +11,6 @@ import SwiftUI
 public struct ChallengesView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: ChallengesViewModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
         _viewModel = StateObject(wrappedValue: ChallengesViewModel(container: container))
@@ -20,66 +18,83 @@ public struct ChallengesView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: LayoutTokens.spacingL) {
-                    // 1. Quests Header Summary
-                    ChallengesHeaderBanner(
-                        joinedCount: viewModel.joinedChallengesCount,
-                        potentialKP: viewModel.potentialRewardKP
-                    )
-                    .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                    .padding(.top, LayoutTokens.spacingS)
+            ZStack {
+                Color.KlymbBackground.primary.ignoresSafeArea()
 
-                    // 2. Category Filter Pills
-                    ChallengeCategoryFilterBar(
-                        selectedCategory: viewModel.selectedCategory,
-                        onSelect: { viewModel.setCategory($0) }
-                    )
-                    .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: KlymbSpacing.lg) {
+                        // 1. Editorial Header
+                        HStack(alignment: .lastTextBaseline) {
+                            Text("Challenges")
+                                .font(Font.Klymb.titleLarge)
+                                .foregroundStyle(Color.KlymbText.primary)
 
-                    // 3. Challenge Cards List
-                    if viewModel.isLoading && viewModel.challenges.isEmpty {
-                        ProgressView()
-                            .tint(ColorTokens.electricCyan)
-                            .padding(.top, 40)
-                    } else if let error = viewModel.errorMessage, viewModel.challenges.isEmpty {
-                        VStack(spacing: LayoutTokens.spacingM) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 32))
-                                .foregroundStyle(ColorTokens.neonRed)
-                            Text(error)
-                                .font(TypographyTokens.body)
-                                .foregroundStyle(ColorTokens.textSecondary)
+                            Spacer()
+
+                            Text("+\(viewModel.potentialRewardKP) KP POOL")
+                                .font(Font.Klymb.telemetry)
+                                .foregroundStyle(Color.KlymbAccent.soft)
                         }
-                        .padding(.top, 40)
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                    } else if viewModel.filteredChallenges.isEmpty {
-                        EmptyChallengesView(category: viewModel.selectedCategory)
-                            .padding(.top, 40)
+                        .padding(.top, KlymbSpacing.sm)
+
+                        // 2. Compact Summary Strip
+                        ChallengesSummaryStrip(
+                            joinedCount: viewModel.joinedChallengesCount,
+                            potentialKP: viewModel.potentialRewardKP
+                        )
+                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        // 3. Underlined Category Filter
+                        ChallengeCategoryUnderlineBar(
+                            selectedCategory: viewModel.selectedCategory,
+                            onSelect: { viewModel.setCategory($0) }
+                        )
+                        .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+
+                        // 4. Challenge List
+                        if viewModel.isLoading && viewModel.challenges.isEmpty {
+                            ProgressView()
+                                .tint(Color.KlymbAccent.primary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 48)
+                        } else if let error = viewModel.errorMessage, viewModel.challenges.isEmpty {
+                            VStack(spacing: KlymbSpacing.md) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundStyle(Color.KlymbSemantic.error)
+                                Text(error)
+                                    .font(Font.Klymb.body)
+                                    .foregroundStyle(Color.KlymbText.secondary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 48)
                             .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                    } else {
-                        VStack(spacing: LayoutTokens.spacingM) {
-                            ForEach(viewModel.filteredChallenges) { challenge in
-                                ChallengeCard(challenge: challenge) {
-                                    viewModel.selectChallenge(challenge)
-                                }
+                        } else if viewModel.filteredChallenges.isEmpty {
+                            EmptyChallengesView(category: viewModel.selectedCategory)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 48)
                                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                        } else {
+                            VStack(spacing: KlymbSpacing.md) {
+                                ForEach(viewModel.filteredChallenges) { challenge in
+                                    ChallengeCard(challenge: challenge) {
+                                        viewModel.selectChallenge(challenge)
+                                    }
+                                    .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
+                                }
                             }
                         }
-                    }
 
-                    Spacer(minLength: 40)
+                        Spacer(minLength: 40)
+                    }
+                    .padding(.bottom, KlymbSpacing.xl)
                 }
-                .padding(.bottom, LayoutTokens.spacingXXL)
+                .refreshable {
+                    await viewModel.fetchChallenges()
+                }
             }
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
-            .navigationTitle("Challenges")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(ColorTokens.backgroundPrimary, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .refreshable {
-                await viewModel.fetchChallenges()
-            }
+            .toolbar(.hidden, for: .navigationBar)
             .task {
                 await viewModel.fetchChallenges()
             }
@@ -104,246 +119,176 @@ public struct ChallengesView: View {
     }
 }
 
-// MARK: - 1. Challenges Header Banner
-private struct ChallengesHeaderBanner: View {
+// MARK: - Summary Strip
+private struct ChallengesSummaryStrip: View {
     let joinedCount: Int
     let potentialKP: Int
 
     var body: some View {
-        HStack(spacing: LayoutTokens.spacingM) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("ACTIVE QUESTS")
-                    .font(TypographyTokens.caption1.bold())
-                    .foregroundStyle(ColorTokens.electricCyan)
+        KlymbCard(padding: KlymbSpacing.lg, isElevated: true) {
+            HStack(spacing: 0) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("ACTIVE QUESTS")
+                        .font(Font.Klymb.telemetry)
+                        .foregroundStyle(Color.KlymbText.secondary)
 
-                Text("\(joinedCount) Joined")
-                    .font(TypographyTokens.title2)
-                    .foregroundStyle(ColorTokens.textPrimary)
-
-                Text("Complete goals before time expires")
-                    .font(TypographyTokens.caption2)
-                    .foregroundStyle(ColorTokens.textSecondary)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("REWARD POOL")
-                    .font(TypographyTokens.caption1.bold())
-                    .foregroundStyle(Color.KlymbRank.gold)
-
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color.KlymbRank.gold)
-                    Text("+\(potentialKP)")
-                        .font(.system(size: 22, weight: .black, design: .monospaced))
-                        .foregroundStyle(ColorTokens.textPrimary)
+                    Text("\(joinedCount) Joined")
+                        .font(Font.Klymb.athleticMetric)
+                        .foregroundStyle(Color.KlymbText.primary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text("KP Available")
-                    .font(TypographyTokens.caption2)
-                    .foregroundStyle(ColorTokens.textTertiary)
+                Rectangle()
+                    .fill(Color.KlymbBorder.subtle)
+                    .frame(width: 1, height: 34)
+                    .padding(.horizontal, KlymbSpacing.md)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("AVAILABLE REWARD")
+                        .font(Font.Klymb.telemetry)
+                        .foregroundStyle(Color.KlymbText.secondary)
+
+                    Text("+\(potentialKP.formatted()) KP")
+                        .font(Font.Klymb.athleticMetric)
+                        .foregroundStyle(Color.KlymbAccent.soft)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(LayoutTokens.paddingL)
-        .background(
-            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                .fill(ColorTokens.backgroundSecondary)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                .strokeBorder(ColorTokens.electricCyan.opacity(0.3), lineWidth: 1)
-        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(joinedCount) active challenges joined. \(potentialKP) KP available to earn.")
     }
 }
 
-// MARK: - 2. Category Filter Bar
-private struct ChallengeCategoryFilterBar: View {
+// MARK: - Underlined Category Strip
+private struct ChallengeCategoryUnderlineBar: View {
     let selectedCategory: ChallengeCategoryFilter
     let onSelect: (ChallengeCategoryFilter) -> Void
 
     var body: some View {
-        HStack(spacing: LayoutTokens.spacingS) {
-            ForEach(ChallengeCategoryFilter.allCases) { category in
-                let isSelected = (category == selectedCategory)
+        VStack(spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: KlymbSpacing.xl) {
+                    ForEach(ChallengeCategoryFilter.allCases) { category in
+                        let isSelected = (category == selectedCategory)
 
-                Button {
-                    onSelect(category)
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: category.iconName)
-                            .font(.system(size: 12, weight: .bold))
-                        Text(category.title)
-                            .font(TypographyTokens.caption1.weight(.semibold))
+                        Button {
+                            onSelect(category)
+                        } label: {
+                            VStack(spacing: 8) {
+                                Text(category.title)
+                                    .font(Font.Klymb.bodySmall.weight(.semibold))
+                                    .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
+
+                                Rectangle()
+                                    .fill(isSelected ? Color.KlymbAccent.primary : Color.clear)
+                                    .frame(height: 2)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(category.title) category")
+                        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
                     }
-                    .padding(.horizontal, LayoutTokens.paddingM)
-                    .padding(.vertical, 8)
-                    .background(
-                        Capsule()
-                            .fill(isSelected ? ColorTokens.electricCyan.opacity(0.18) : ColorTokens.backgroundSecondary)
-                    )
-                    .overlay(
-                        Capsule()
-                            .strokeBorder(isSelected ? ColorTokens.electricCyan : ColorTokens.borderSubtle, lineWidth: 1)
-                    )
-                    .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textSecondary)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(category.title) category")
-                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
             }
-
-            Spacer()
+            Divider().background(Color.KlymbBorder.subtle)
         }
     }
 }
 
-// MARK: - 3. Challenge Card
+// MARK: - Challenge Card
 private struct ChallengeCard: View {
     let challenge: Challenge
     let onTap: () -> Void
 
+    private var statusColor: Color {
+        if challenge.isCompleted { return Color.KlymbSemantic.success }
+        if challenge.isJoined { return Color.KlymbAccent.soft }
+        return Color.KlymbText.tertiary
+    }
+
     var body: some View {
-        Button {
-            onTap()
-        } label: {
-            VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-                // Top Tag & Reward Row
-                HStack(spacing: LayoutTokens.spacingS) {
-                    // Habit icon
-                    ZStack {
-                        RoundedRectangle(cornerRadius: LayoutTokens.radiusS)
-                            .fill(challenge.categoryColor.opacity(0.2))
-                            .frame(width: 36, height: 36)
+        Button(action: onTap) {
+            KlymbCard(
+                glowColor: challenge.isCompleted ? Color.KlymbSemantic.success : (challenge.isJoined ? Color.KlymbAccent.primary : nil),
+                padding: KlymbSpacing.lg,
+                isElevated: !challenge.isCompleted
+            ) {
+                VStack(alignment: .leading, spacing: KlymbSpacing.md) {
+                    HStack(alignment: .top, spacing: KlymbSpacing.md) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            HStack(spacing: 6) {
+                                Image(systemName: challenge.habitIconName)
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(challenge.isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.soft)
 
-                        Image(systemName: challenge.habitIconName)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(challenge.categoryColor)
-                    }
+                                Text(challenge.type.uppercased())
+                                    .font(Font.Klymb.telemetry)
+                                    .foregroundStyle(challenge.isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.soft)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(challenge.type.uppercased())
-                                .font(.system(size: 10, weight: .black))
-                                .foregroundStyle(challenge.categoryColor)
+                                Text("• \(challenge.timeRemainingText)")
+                                    .font(Font.Klymb.captionSmall)
+                                    .foregroundStyle(Color.KlymbText.tertiary)
+                            }
 
-                            Text("•")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
+                            Text(challenge.title)
+                                .font(Font.Klymb.headline)
+                                .foregroundStyle(Color.KlymbText.primary)
 
-                            Text(challenge.timeRemainingText)
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textSecondary)
+                            if let desc = challenge.description {
+                                Text(desc)
+                                    .font(Font.Klymb.caption)
+                                    .foregroundStyle(Color.KlymbText.secondary)
+                                    .lineLimit(2)
+                                    .padding(.top, 2)
+                            }
                         }
 
-                        Text(challenge.title)
-                            .font(TypographyTokens.headline)
-                            .foregroundStyle(ColorTokens.textPrimary)
-                    }
+                        Spacer(minLength: KlymbSpacing.sm)
 
-                    Spacer()
-
-                    // Reward badge
-                    HStack(spacing: 4) {
-                        Image(systemName: "trophy.fill")
-                            .font(.system(size: 11))
                         Text("+\(challenge.rewardKP) KP")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                    }
-                    .foregroundStyle(Color.KlymbRank.gold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.KlymbRank.gold.opacity(0.12))
-                    .clipShape(Capsule())
-                }
-
-                if let desc = challenge.description {
-                    Text(desc)
-                        .font(TypographyTokens.caption1)
-                        .foregroundStyle(ColorTokens.textSecondary)
-                        .lineLimit(2)
-                }
-
-                // Progress Bar & Target
-                VStack(spacing: 6) {
-                    HStack {
-                        Text(challenge.isCompleted ? "COMPLETED" : (challenge.isJoined ? "IN PROGRESS" : "AVAILABLE"))
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(challenge.isCompleted ? ColorTokens.neonGreen : (challenge.isJoined ? ColorTokens.electricCyan : ColorTokens.textTertiary))
-
-                        Spacer()
-
-                        Text("\(challenge.formattedCurrent) / \(challenge.formattedTarget)")
-                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                            .foregroundStyle(ColorTokens.textPrimary)
+                            .font(Font.Klymb.telemetry)
+                            .monospacedDigit()
+                            .foregroundStyle(challenge.isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.soft)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 5)
+                            .background(
+                                (challenge.isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.primary)
+                                    .opacity(0.14)
+                            )
+                            .clipShape(Capsule())
                     }
 
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(ColorTokens.backgroundTertiary)
-                                .frame(height: 8)
+                    VStack(spacing: 6) {
+                        HStack {
+                            Text(challenge.isCompleted ? "GOAL HIT" : (challenge.isJoined ? "IN PROGRESS" : "AVAILABLE"))
+                                .font(Font.Klymb.telemetry)
+                                .foregroundStyle(statusColor)
 
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(
-                                    LinearGradient(
-                                        colors: challenge.isCompleted ? [ColorTokens.neonGreen, ColorTokens.electricCyan] : [challenge.categoryColor, ColorTokens.electricCyan],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: geo.size.width * CGFloat(challenge.progressRatio), height: 8)
+                            Spacer()
+
+                            Text("\(challenge.formattedCurrent) / \(challenge.formattedTarget)")
+                                .font(Font.Klymb.telemetry)
+                                .monospacedDigit()
+                                .foregroundStyle(Color.KlymbText.primary)
                         }
+
+                        KlymbProgressBar(
+                            progress: challenge.progressRatio,
+                            height: 5,
+                            isCompleted: challenge.isCompleted
+                        )
                     }
-                    .frame(height: 8)
-                }
-
-                // Bottom Status Pill
-                HStack {
-                    if challenge.isJoined {
-                        HStack(spacing: 4) {
-                            Image(systemName: challenge.isCompleted ? "checkmark.circle.fill" : "bolt.circle.fill")
-                                .font(.system(size: 12))
-                            Text(challenge.isCompleted ? "Goal Reached" : "Joined & Tracking")
-                                .font(.system(size: 11, weight: .semibold))
-                        }
-                        .foregroundStyle(challenge.isCompleted ? ColorTokens.neonGreen : ColorTokens.electricCyan)
-                    } else {
-                        Text("Tap to view details & join")
-                            .font(TypographyTokens.caption2)
-                            .foregroundStyle(ColorTokens.textTertiary)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(ColorTokens.textTertiary)
                 }
             }
-            .padding(LayoutTokens.paddingM)
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(
-                        challenge.isJoined ? challenge.categoryColor.opacity(0.5) : ColorTokens.borderSubtle,
-                        lineWidth: challenge.isJoined ? 1.5 : 1
-                    )
-            )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KlymbPressableButtonStyle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(challenge.title), \(challenge.type), \(Int(challenge.progressRatio * 100)) percent complete, reward \(challenge.rewardKP) KP, \(challenge.timeRemainingText)")
     }
 }
 
-// MARK: - 4. Challenge Detail Sheet
+// MARK: - Challenge Detail Sheet
 private struct ChallengeDetailSheet: View {
     let challenge: Challenge
     let standings: [LeaderboardEntry]
@@ -354,176 +299,173 @@ private struct ChallengeDetailSheet: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: LayoutTokens.spacingL) {
-                    // Top Hero Icon
+                VStack(spacing: KlymbSpacing.lg) {
                     ZStack {
                         Circle()
-                            .fill(challenge.categoryColor.opacity(0.18))
-                            .frame(width: 80, height: 80)
+                            .fill(Color.KlymbAccent.primaryMuted)
+                            .frame(width: 76, height: 76)
 
                         Image(systemName: challenge.habitIconName)
-                            .font(.system(size: 36))
-                            .foregroundStyle(challenge.categoryColor)
+                            .font(.system(size: 30, weight: .semibold))
+                            .foregroundStyle(Color.KlymbAccent.soft)
                     }
                     .overlay(
                         Circle()
-                            .strokeBorder(challenge.categoryColor.opacity(0.6), lineWidth: 2)
+                            .strokeBorder(Color.KlymbAccent.primary.opacity(0.45), lineWidth: 1.5)
                     )
-                    .padding(.top, LayoutTokens.spacingM)
+                    .padding(.top, KlymbSpacing.md)
 
-                    // Title & Description
                     VStack(spacing: 6) {
                         Text(challenge.type.uppercased())
-                            .font(.system(size: 11, weight: .black))
-                            .foregroundStyle(challenge.categoryColor)
+                            .font(Font.Klymb.telemetry)
+                            .foregroundStyle(Color.KlymbAccent.soft)
 
                         Text(challenge.title)
-                            .font(TypographyTokens.title2)
-                            .foregroundStyle(ColorTokens.textPrimary)
+                            .font(Font.Klymb.titleSmall)
+                            .foregroundStyle(Color.KlymbText.primary)
                             .multilineTextAlignment(.center)
 
                         if let desc = challenge.description {
                             Text(desc)
-                                .font(TypographyTokens.body)
-                                .foregroundStyle(ColorTokens.textSecondary)
+                                .font(Font.Klymb.bodySmall)
+                                .foregroundStyle(Color.KlymbText.secondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                         }
                     }
 
-                    // Key Metrics Grid
-                    HStack(spacing: LayoutTokens.spacingM) {
+                    HStack(spacing: KlymbSpacing.md) {
                         StatTile(
                             icon: "target",
                             value: challenge.formattedTarget,
-                            label: "GOAL",
-                            valueColor: challenge.categoryColor
+                            label: "Goal",
+                            valueColor: Color.KlymbAccent.soft
                         )
 
                         StatTile(
                             icon: "trophy.fill",
-                            value: "+\(challenge.rewardKP) KP",
-                            label: "REWARD",
+                            value: "+\(challenge.rewardKP)",
+                            label: "Reward KP",
                             valueColor: Color.KlymbRank.gold
                         )
 
                         StatTile(
                             icon: "clock.fill",
                             value: challenge.timeRemainingText,
-                            label: "CLOSES IN",
-                            valueColor: ColorTokens.neonOrange
+                            label: "Remaining",
+                            valueColor: Color.KlymbText.primary
                         )
                     }
                     .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
-                    // Progress Section
-                    VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
+                    VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
                         HStack {
                             Text("YOUR PROGRESS")
-                                .font(TypographyTokens.caption1.bold())
-                                .foregroundStyle(ColorTokens.textTertiary)
+                                .font(Font.Klymb.telemetry)
+                                .foregroundStyle(Color.KlymbText.secondary)
                             Spacer()
                             Text("\(challenge.formattedCurrent) / \(challenge.formattedTarget)")
-                                .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                .foregroundStyle(ColorTokens.electricCyan)
+                                .font(Font.Klymb.telemetry)
+                                .monospacedDigit()
+                                .foregroundStyle(challenge.isCompleted ? Color.KlymbSemantic.success : Color.KlymbAccent.soft)
                         }
 
-                        ProgressView(value: challenge.progressRatio)
-                            .tint(challenge.categoryColor)
-                            .scaleEffect(x: 1, y: 2, anchor: .center)
-                            .clipShape(Capsule())
+                        KlymbProgressBar(
+                            progress: challenge.progressRatio,
+                            height: 6,
+                            isCompleted: challenge.isCompleted
+                        )
                     }
                     .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
-                    // Challenge Standings / Participants
                     if !standings.isEmpty {
-                        VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                            Text("TOP PARTICIPANTS")
-                                .font(TypographyTokens.caption1.bold())
-                                .foregroundStyle(ColorTokens.textTertiary)
+                        VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+                            KlymbSectionHeader("Top Participants")
 
-                            ForEach(standings) { athlete in
-                                HStack(spacing: LayoutTokens.spacingM) {
-                                    Text("#\(athlete.rank)")
-                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                        .foregroundStyle(athlete.rankColor)
-                                        .frame(width: 28, alignment: .leading)
+                            KlymbGroupedSurface {
+                                ForEach(Array(standings.enumerated()), id: \.element.id) { index, athlete in
+                                    if index > 0 {
+                                        Divider().background(Color.KlymbBorder.subtle)
+                                    }
+                                    HStack(spacing: KlymbSpacing.md) {
+                                        Text("#\(athlete.rank)")
+                                            .font(Font.Klymb.rankNumber)
+                                            .foregroundStyle(athlete.rankColor)
+                                            .frame(width: 30, alignment: .leading)
 
-                                    Image(systemName: athlete.avatarIconName)
-                                        .foregroundStyle(ColorTokens.electricCyan)
+                                        Image(systemName: athlete.avatarIconName)
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(Color.KlymbAccent.soft)
 
-                                    Text(athlete.displayName ?? athlete.username)
-                                        .font(TypographyTokens.subheadline.bold())
-                                        .foregroundStyle(ColorTokens.textPrimary)
+                                        Text(athlete.displayName ?? athlete.username)
+                                            .font(Font.Klymb.bodySmall.weight(.semibold))
+                                            .foregroundStyle(Color.KlymbText.primary)
 
-                                    Spacer()
+                                        Spacer()
 
-                                    Text("\(athlete.totalKP) KP")
-                                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                        .foregroundStyle(ColorTokens.textSecondary)
+                                        Text("\(athlete.totalKP.formatted()) KP")
+                                            .font(Font.Klymb.telemetry)
+                                            .monospacedDigit()
+                                            .foregroundStyle(Color.KlymbText.secondary)
+                                    }
+                                    .padding(.horizontal, KlymbSpacing.lg)
+                                    .padding(.vertical, 12)
                                 }
-                                .padding(LayoutTokens.paddingM)
-                                .background(
-                                    RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                                        .fill(ColorTokens.backgroundSecondary)
-                                )
                             }
                         }
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                     }
 
-                    Spacer(minLength: 20)
+                    Spacer(minLength: 16)
 
-                    // Action Button
                     if challenge.isJoined {
                         SecondaryButton(
                             "Leave Challenge",
-                            icon: "xmark.circle",
+                            icon: "xmark",
                             action: onToggleJoin
                         )
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                     } else {
                         PrimaryButton(
                             "Join Challenge",
-                            icon: "plus.circle.fill",
+                            icon: "plus",
                             isLoading: isLoading,
                             action: onToggleJoin
                         )
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
                     }
                 }
-                .padding(.bottom, LayoutTokens.spacingL)
+                .padding(.bottom, KlymbSpacing.lg)
             }
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
+            .background(Color.KlymbBackground.primary.ignoresSafeArea())
             .navigationTitle("Challenge Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done", action: onClose)
-                        .foregroundStyle(ColorTokens.electricCyan)
+                        .foregroundStyle(Color.KlymbAccent.soft)
                 }
             }
         }
     }
 }
 
-// MARK: - 5. Empty State
 private struct EmptyChallengesView: View {
     let category: ChallengeCategoryFilter
 
     var body: some View {
-        VStack(spacing: LayoutTokens.spacingM) {
-            Image(systemName: "flag.slash.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(ColorTokens.textTertiary)
+        VStack(spacing: KlymbSpacing.md) {
+            Image(systemName: "flag.slash")
+                .font(.system(size: 36, weight: .light))
+                .foregroundStyle(Color.KlymbText.tertiary)
 
             Text("No \(category.title) Challenges")
-                .font(TypographyTokens.headline)
-                .foregroundStyle(ColorTokens.textPrimary)
+                .font(Font.Klymb.headline)
+                .foregroundStyle(Color.KlymbText.primary)
 
-            Text("Check back soon for new community quests and daily discipline goals.")
-                .font(TypographyTokens.subheadline)
-                .foregroundStyle(ColorTokens.textSecondary)
+            Text("Check back soon for new daily and weekly discipline quests.")
+                .font(Font.Klymb.bodySmall)
+                .foregroundStyle(Color.KlymbText.secondary)
                 .multilineTextAlignment(.center)
         }
     }

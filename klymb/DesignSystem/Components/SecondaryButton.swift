@@ -2,7 +2,7 @@
 //  SecondaryButton.swift
 //  klymb
 //
-//  Outlined Secondary Button matching docs/DESIGN_SYSTEM.md §9.2.
+//  Architectural secondary button matching the matte charcoal & bone ink system.
 //
 
 import SwiftUI
@@ -32,23 +32,23 @@ public struct SecondaryButton: View {
             action()
         }) {
             HStack(spacing: KlymbSpacing.sm) {
-                if let icon = icon {
+                if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 16, weight: .semibold))
                 }
                 Text(title)
                     .font(Font.Klymb.headline)
             }
-            .foregroundStyle(Color.KlymbAccent.primary)
+            .foregroundStyle(isEnabled ? Color.KlymbText.primary : Color.KlymbAccent.disabledText)
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
-            .background(Color.clear)
+            .frame(minHeight: 50)
+            .background(Color.KlymbBackground.tertiary)
+            .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: KlymbRadius.lg)
-                    .stroke(Color.KlymbAccent.primary, lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                    .strokeBorder(KlymbGradient.specularBorder, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg))
-            .opacity(isEnabled ? 1.0 : 0.4)
+            .opacity(isEnabled ? 1.0 : 0.5)
         }
         .disabled(!isEnabled)
         .buttonStyle(KlymbPressableButtonStyle())
@@ -58,8 +58,8 @@ public struct SecondaryButton: View {
 }
 
 #Preview {
-    VStack(spacing: 16) {
-        SecondaryButton("View Rules", icon: "doc.text") {}
+    VStack(spacing: 14) {
+        SecondaryButton("Leave Challenge", icon: "xmark") {}
         SecondaryButton("Disabled", isEnabled: false) {}
     }
     .padding()

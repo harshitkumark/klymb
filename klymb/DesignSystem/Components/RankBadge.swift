@@ -2,7 +2,7 @@
 //  RankBadge.swift
 //  klymb
 //
-//  Tiered leaderboard rank badge matching docs/DESIGN_SYSTEM.md §9.4.
+//  Clean circular leaderboard rank crest matching the Matte Charcoal & Metallic system.
 //
 
 import SwiftUI
@@ -23,18 +23,12 @@ public struct RankBadge: View {
                 .frame(width: size, height: size)
                 .overlay(
                     Circle()
-                        .stroke(badgeBorderColor, lineWidth: isTopThree ? 2.0 : 1.0)
+                        .strokeBorder(badgeBorderColor, lineWidth: isTopThree ? 1.5 : 1.0)
                 )
 
-            if rank <= 3 {
-                Image(systemName: "crown.fill")
-                    .font(.system(size: size * 0.35, weight: .bold))
-                    .foregroundStyle(badgeTextColor)
-                    .offset(y: -size * 0.52)
-            }
-
             Text("#\(rank)")
-                .font(.system(size: size * 0.38, weight: .bold, design: .monospaced))
+                .font(.system(size: max(11, size * 0.36), weight: .bold, design: .monospaced))
+                .monospacedDigit()
                 .foregroundStyle(badgeTextColor)
                 .minimumScaleFactor(0.7)
         }
@@ -45,27 +39,22 @@ public struct RankBadge: View {
         rank >= 1 && rank <= 3
     }
 
-    private var badgeBackground: AnyShapeStyle {
+    private var badgeBackground: Color {
         switch rank {
-        case 1:
-            return AnyShapeStyle(Color.KlymbRank.gold.opacity(0.25))
-        case 2:
-            return AnyShapeStyle(Color.KlymbRank.silver.opacity(0.25))
-        case 3:
-            return AnyShapeStyle(Color.KlymbRank.bronze.opacity(0.25))
-        case 4...10:
-            return AnyShapeStyle(Color.KlymbAccent.primaryMuted)
-        default:
-            return AnyShapeStyle(Color.KlymbBackground.tertiary)
+        case 1: return Color.KlymbRank.gold.opacity(0.16)
+        case 2: return Color.KlymbRank.silver.opacity(0.14)
+        case 3: return Color.KlymbRank.bronze.opacity(0.14)
+        case 4...10: return Color.KlymbAccent.primaryMuted
+        default: return Color.KlymbBackground.tertiary
         }
     }
 
     private var badgeBorderColor: Color {
         switch rank {
-        case 1: return Color.KlymbRank.gold
-        case 2: return Color.KlymbRank.silver
-        case 3: return Color.KlymbRank.bronze
-        case 4...10: return Color.KlymbAccent.primary
+        case 1: return Color.KlymbRank.gold.opacity(0.7)
+        case 2: return Color.KlymbRank.silver.opacity(0.6)
+        case 3: return Color.KlymbRank.bronze.opacity(0.6)
+        case 4...10: return Color.KlymbAccent.primary.opacity(0.45)
         default: return Color.KlymbBorder.default
         }
     }
@@ -75,7 +64,7 @@ public struct RankBadge: View {
         case 1: return Color.KlymbRank.gold
         case 2: return Color.KlymbRank.silver
         case 3: return Color.KlymbRank.bronze
-        case 4...10: return Color.KlymbAccent.primary
+        case 4...10: return Color.KlymbAccent.soft
         default: return Color.KlymbText.secondary
         }
     }
@@ -83,11 +72,11 @@ public struct RankBadge: View {
 
 #Preview {
     HStack(spacing: 16) {
-        RankBadge(rank: 1, size: 48)
-        RankBadge(rank: 2, size: 48)
-        RankBadge(rank: 3, size: 48)
-        RankBadge(rank: 7, size: 48)
-        RankBadge(rank: 42, size: 48)
+        RankBadge(rank: 1, size: 44)
+        RankBadge(rank: 2, size: 44)
+        RankBadge(rank: 3, size: 44)
+        RankBadge(rank: 7, size: 44)
+        RankBadge(rank: 42, size: 44)
     }
     .padding()
     .background(Color.KlymbBackground.primary)

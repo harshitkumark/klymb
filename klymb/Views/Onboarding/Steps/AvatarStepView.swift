@@ -3,7 +3,6 @@
 //  klymb
 //
 //  Step 2: Preset Avatar Emblem selection.
-//  (AGENTS.md Rule 15: SwiftUI + MVVM, Rule 18: Accessibility).
 //
 
 import SwiftUI
@@ -23,19 +22,17 @@ public struct AvatarStepView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: LayoutTokens.spacingL) {
-                // Header
                 VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                    Text("SELECT EMBLEM")
-                        .font(TypographyTokens.title1)
-                        .foregroundStyle(ColorTokens.textPrimary)
+                    Text("Select emblem")
+                        .font(Font.Klymb.titleLarge)
+                        .foregroundStyle(Color.KlymbText.primary)
 
-                    Text("Choose the emblem that accompanies your rank badge in the arena.")
-                        .font(TypographyTokens.subheadline)
-                        .foregroundStyle(ColorTokens.textSecondary)
+                    Text("Choose the crest that accompanies your rank across your city arena.")
+                        .font(Font.Klymb.bodySmall)
+                        .foregroundStyle(Color.KlymbText.secondary)
                 }
                 .accessibilityElement(children: .combine)
 
-                // Avatar Grid
                 LazyVGrid(columns: columns, spacing: LayoutTokens.spacingM) {
                     ForEach(viewModel.avatarPresets) { preset in
                         AvatarOptionCard(
@@ -48,9 +45,8 @@ public struct AvatarStepView: View {
                     }
                 }
 
-                Spacer(minLength: 40)
+                Spacer(minLength: 32)
 
-                // CTA
                 PrimaryButton(
                     title: "Next: Select Arena",
                     icon: "arrow.right",
@@ -60,7 +56,7 @@ public struct AvatarStepView: View {
                 }
             }
             .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-            .padding(.top, LayoutTokens.spacingL)
+            .padding(.top, LayoutTokens.spacingM)
             .padding(.bottom, LayoutTokens.spacingXXL)
         }
     }
@@ -73,55 +69,40 @@ private struct AvatarOptionCard: View {
 
     var body: some View {
         Button(action: action) {
-            KlymbCard(
-                glowColor: isSelected ? ColorTokens.electricCyan.opacity(0.3) : nil,
-                padding: LayoutTokens.paddingM
-            ) {
-                VStack(spacing: LayoutTokens.spacingM) {
-                    ZStack {
-                        Circle()
-                            .fill(isSelected ? ColorTokens.electricCyan.opacity(0.2) : ColorTokens.backgroundSecondary)
-                            .frame(width: 56, height: 56)
-
-                        Image(systemName: preset.iconName)
-                            .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(isSelected ? ColorTokens.electricCyan : ColorTokens.textPrimary)
-                    }
-
-                    VStack(spacing: 2) {
-                        Text(preset.title)
-                            .font(TypographyTokens.headline)
-                            .foregroundStyle(ColorTokens.textPrimary)
-
-                        Text(preset.description)
-                            .font(TypographyTokens.caption2)
-                            .foregroundStyle(ColorTokens.textTertiary)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                    }
-
-                    if isSelected {
-                        HStack(spacing: 4) {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 10, weight: .bold))
-                            Text("SELECTED")
-                                .font(.system(size: 10, weight: .heavy))
-                        }
-                        .foregroundStyle(ColorTokens.electricCyan)
-                    } else {
-                        Spacer()
-                            .frame(height: 14)
-                    }
+            VStack(spacing: KlymbSpacing.md) {
+                HStack {
+                    Spacer()
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.tertiary)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(minHeight: 140)
+
+                Image(systemName: preset.iconName)
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.primary)
+                    .frame(height: 36)
+
+                VStack(spacing: 3) {
+                    Text(preset.title)
+                        .font(Font.Klymb.headline)
+                        .foregroundStyle(Color.KlymbText.primary)
+
+                    Text(preset.description)
+                        .font(Font.Klymb.captionSmall)
+                        .foregroundStyle(Color.KlymbText.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                }
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                    .stroke(isSelected ? ColorTokens.electricCyan : Color.clear, lineWidth: 2)
+            .padding(KlymbSpacing.md)
+            .frame(maxWidth: .infinity, minHeight: 138)
+            .klymbCardStyle(
+                cornerRadius: KlymbRadius.lg,
+                isHighlighted: isSelected,
+                isElevated: isSelected
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(KlymbPressableButtonStyle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(preset.title) emblem, \(preset.description)")
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : [.isButton])

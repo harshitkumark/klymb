@@ -59,10 +59,10 @@ public extension Challenge {
 
     var categoryColor: Color {
         switch type {
-        case "daily": return ColorTokens.electricCyan
-        case "weekly": return ColorTokens.neonPurple
-        case "community": return ColorTokens.neonOrange
-        default: return ColorTokens.electricCyan
+        case "daily": return ColorTokens.terracotta
+        case "weekly": return ColorTokens.softCopper
+        case "community": return ColorTokens.neonYellow
+        default: return ColorTokens.terracotta
         }
     }
 

@@ -2,8 +2,7 @@
 //  UsernameStepView.swift
 //  klymb
 //
-//  Step 1: Username & Display Name selection.
-//  (AGENTS.md Rule 15: SwiftUI + MVVM, Rule 18: Accessibility).
+//  Step 1: Minimalist Username & Display Name selection.
 //
 
 import SwiftUI
@@ -19,34 +18,31 @@ public struct UsernameStepView: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: LayoutTokens.spacingL) {
-                // Header
+            VStack(alignment: .leading, spacing: LayoutTokens.spacingXL) {
                 VStack(alignment: .leading, spacing: LayoutTokens.spacingS) {
-                    Text("CLAIM YOUR TAG")
-                        .font(TypographyTokens.title1)
-                        .foregroundStyle(ColorTokens.textPrimary)
+                    Text("Claim your tag")
+                        .font(Font.Klymb.titleLarge)
+                        .foregroundStyle(Color.KlymbText.primary)
 
-                    Text("Your unique handle in city and global leaderboards. Choose wisely — athletes will see this when you pass them.")
-                        .font(TypographyTokens.subheadline)
-                        .foregroundStyle(ColorTokens.textSecondary)
+                    Text("Your unique handle on city and global leaderboards. Athletes see this when you climb past them.")
+                        .font(Font.Klymb.bodySmall)
+                        .foregroundStyle(Color.KlymbText.secondary)
                 }
                 .accessibilityElement(children: .combine)
 
-                // Username Card
-                KlymbCard(padding: LayoutTokens.paddingM) {
-                    VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-                        Text("USERNAME")
-                            .font(TypographyTokens.caption1)
-                            .foregroundStyle(ColorTokens.textTertiary)
+                VStack(alignment: .leading, spacing: KlymbSpacing.lg) {
+                    // Username Input
+                    VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+                        KlymbSectionHeader("Username")
 
                         HStack(spacing: LayoutTokens.spacingS) {
                             Text("@")
-                                .font(TypographyTokens.headline)
-                                .foregroundStyle(ColorTokens.electricCyan)
+                                .font(Font.Klymb.headline)
+                                .foregroundStyle(Color.KlymbAccent.soft)
 
                             TextField("username", text: $viewModel.username)
-                                .font(TypographyTokens.headline)
-                                .foregroundStyle(ColorTokens.textPrimary)
+                                .font(Font.Klymb.headline)
+                                .foregroundStyle(Color.KlymbText.primary)
                                 .autocorrectionDisabled(true)
                                 .textInputAutocapitalization(.never)
                                 .focused($isUsernameFocused)
@@ -55,61 +51,58 @@ public struct UsernameStepView: View {
 
                             if !viewModel.username.isEmpty {
                                 Image(systemName: viewModel.isUsernameValid ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                                    .foregroundStyle(viewModel.isUsernameValid ? ColorTokens.neonGreen : ColorTokens.neonOrange)
+                                    .foregroundStyle(viewModel.isUsernameValid ? Color.KlymbSemantic.success : Color.KlymbSemantic.warning)
                                     .accessibilityHidden(true)
                             }
                         }
-                        .padding(LayoutTokens.paddingM)
-                        .background(ColorTokens.backgroundSecondary)
-                        .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusS))
+                        .padding(.horizontal, KlymbSpacing.md)
+                        .frame(minHeight: 50)
+                        .background(Color.KlymbBackground.secondary)
+                        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: LayoutTokens.radiusS)
-                                .stroke(strokeColor, lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                .strokeBorder(strokeColor, lineWidth: 1)
                         )
 
-                        // Validation message
                         if let msg = viewModel.usernameValidationMessage {
                             Text(msg)
-                                .font(TypographyTokens.caption1)
-                                .foregroundStyle(viewModel.isUsernameValid ? ColorTokens.neonGreen : ColorTokens.neonOrange)
+                                .font(Font.Klymb.caption)
+                                .foregroundStyle(viewModel.isUsernameValid ? Color.KlymbSemantic.success : Color.KlymbSemantic.warning)
                                 .accessibilityLabel("Validation status: \(msg)")
                         } else {
-                            Text("3–20 characters, lowercase letters, numbers, underscores")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
+                            Text("3–20 characters: lowercase letters, numbers, underscores")
+                                .font(Font.Klymb.captionSmall)
+                                .foregroundStyle(Color.KlymbText.tertiary)
                         }
                     }
-                }
 
-                // Display Name Card (Optional)
-                KlymbCard(padding: LayoutTokens.paddingM) {
-                    VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-                        HStack {
-                            Text("DISPLAY NAME")
-                                .font(TypographyTokens.caption1)
-                                .foregroundStyle(ColorTokens.textTertiary)
-                            Spacer()
-                            Text("Optional")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
-                        }
+                    // Display Name Input
+                    VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+                        KlymbSectionHeader("Display Name", trailingText: "OPTIONAL", trailingColor: Color.KlymbText.tertiary)
 
                         TextField("e.g. Alex Mercer", text: $viewModel.displayName)
-                            .font(TypographyTokens.body)
-                            .foregroundStyle(ColorTokens.textPrimary)
+                            .font(Font.Klymb.body)
+                            .foregroundStyle(Color.KlymbText.primary)
                             .focused($isDisplayNameFocused)
-                            .padding(LayoutTokens.paddingM)
-                            .background(ColorTokens.backgroundSecondary)
-                            .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusS))
+                            .padding(.horizontal, KlymbSpacing.md)
+                            .frame(minHeight: 50)
+                            .background(Color.KlymbBackground.secondary)
+                            .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                    .strokeBorder(
+                                        isDisplayNameFocused ? Color.KlymbAccent.primary.opacity(0.65) : Color.KlymbBorder.default,
+                                        lineWidth: 1
+                                    )
+                            )
                             .accessibilityLabel("Display name")
                     }
                 }
 
-                Spacer(minLength: 40)
+                Spacer(minLength: 32)
 
-                // CTA
                 PrimaryButton(
-                    title: "Next: Choose Avatar",
+                    title: "Next: Choose Emblem",
                     icon: "arrow.right",
                     isEnabled: viewModel.canProceed
                 ) {
@@ -119,7 +112,7 @@ public struct UsernameStepView: View {
                 }
             }
             .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-            .padding(.top, LayoutTokens.spacingL)
+            .padding(.top, LayoutTokens.spacingM)
             .padding(.bottom, LayoutTokens.spacingXXL)
         }
         .scrollDismissesKeyboard(.immediately)
@@ -131,12 +124,11 @@ public struct UsernameStepView: View {
     }
 
     private var strokeColor: Color {
-        if isUsernameFocused {
-            return viewModel.isUsernameValid ? ColorTokens.neonGreen : ColorTokens.electricCyan
-        }
         if !viewModel.username.isEmpty {
-            return viewModel.isUsernameValid ? ColorTokens.neonGreen : ColorTokens.neonOrange
+            return viewModel.isUsernameValid
+                ? Color.KlymbSemantic.success.opacity(0.65)
+                : Color.KlymbSemantic.warning.opacity(0.7)
         }
-        return ColorTokens.borderSubtle
+        return isUsernameFocused ? Color.KlymbAccent.primary.opacity(0.65) : Color.KlymbBorder.default
     }
 }

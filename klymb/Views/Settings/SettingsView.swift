@@ -3,8 +3,7 @@
 //  klymb
 //
 //  Settings, Profile Editing, City Cooldown, Habit Management,
-//  and GDPR Data Export & Account Deletion (PRD §F15 & Design System §9.11).
-//  Follows AGENTS.md Rules 15, 18.
+//  and GDPR Data Export & Account Deletion.
 //
 
 import SwiftUI
@@ -13,7 +12,6 @@ public struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: SettingsViewModel
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(container: AppContainerProtocol = AppContainer.mock) {
         _viewModel = StateObject(wrappedValue: SettingsViewModel(container: container))
@@ -21,9 +19,8 @@ public struct SettingsView: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: LayoutTokens.spacingL) {
-                    // Success / Error Banner
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: KlymbSpacing.lg) {
                     if let msg = viewModel.successMessage {
                         FeedbackBanner(message: msg, isSuccess: true) {
                             viewModel.successMessage = nil
@@ -50,40 +47,34 @@ public struct SettingsView: View {
                     HabitsSelectionSection(viewModel: viewModel)
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
 
-                    // 4. Notifications Navigation Link
+                    // 4. Push Notifications Navigation Link
                     NavigationLink {
                         NotificationPreferencesView()
                     } label: {
-                        HStack(spacing: LayoutTokens.spacingM) {
-                            Image(systemName: "bell.badge.fill")
-                                .foregroundStyle(ColorTokens.electricCyan)
-                                .frame(width: 24)
+                        KlymbCard(padding: KlymbSpacing.lg) {
+                            HStack(spacing: KlymbSpacing.md) {
+                                Image(systemName: "bell.badge.fill")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(Color.KlymbAccent.soft)
+                                    .frame(width: 24)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Push Notifications")
-                                    .font(TypographyTokens.subheadline.bold())
-                                    .foregroundStyle(ColorTokens.textPrimary)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Push Notifications")
+                                        .font(Font.Klymb.bodySmall.weight(.semibold))
+                                        .foregroundStyle(Color.KlymbText.primary)
 
-                                Text("Manage overtake alerts & streak reminders")
-                                    .font(TypographyTokens.caption1)
-                                    .foregroundStyle(ColorTokens.textTertiary)
+                                    Text("Manage overtake alerts & streak reminders")
+                                        .font(Font.Klymb.captionSmall)
+                                        .foregroundStyle(Color.KlymbText.secondary)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(Color.KlymbText.tertiary)
                             }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(ColorTokens.textTertiary)
                         }
-                        .padding(LayoutTokens.paddingM)
-                        .background(
-                            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                                .fill(ColorTokens.backgroundSecondary)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                                .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-                        )
                     }
                     .buttonStyle(.plain)
                     .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
@@ -98,20 +89,20 @@ public struct SettingsView: View {
 
                     Spacer(minLength: 40)
                 }
-                .padding(.vertical, LayoutTokens.spacingM)
+                .padding(.vertical, KlymbSpacing.md)
             }
-            .background(ColorTokens.backgroundPrimary.ignoresSafeArea())
+            .background(Color.KlymbBackground.primary.ignoresSafeArea())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(ColorTokens.backgroundPrimary, for: .navigationBar)
+            .toolbarBackground(Color.KlymbBackground.primary, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
-                    .font(TypographyTokens.subheadline.bold())
-                    .foregroundStyle(ColorTokens.electricCyan)
+                    .font(Font.Klymb.bodySmall.weight(.semibold))
+                    .foregroundStyle(Color.KlymbAccent.soft)
                 }
             }
             .task {
@@ -143,116 +134,84 @@ private struct ProfileEditSection: View {
     @ObservedObject var viewModel: SettingsViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-            Text("PROFILE DETAILS")
-                .font(TypographyTokens.caption1.bold())
-                .foregroundStyle(ColorTokens.textTertiary)
+        VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+            KlymbSectionHeader("Profile Details")
 
-            VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-                // Avatar Preset Selector
-                Text("Choose Avatar Crest")
-                    .font(TypographyTokens.caption2.weight(.semibold))
-                    .foregroundStyle(ColorTokens.textSecondary)
+            KlymbCard(padding: KlymbSpacing.lg) {
+                VStack(alignment: .leading, spacing: KlymbSpacing.md) {
+                    Text("Avatar Crest")
+                        .font(Font.Klymb.caption)
+                        .foregroundStyle(Color.KlymbText.secondary)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: LayoutTokens.spacingM) {
-                        ForEach(AvatarPreset.availablePresets) { preset in
-                            Button {
-                                viewModel.selectedAvatarPreset = preset.id
-                                HapticManager.selection()
-                            } label: {
-                                VStack(spacing: 6) {
-                                    ZStack {
-                                        Circle()
-                                            .fill(ColorTokens.backgroundTertiary)
-                                            .frame(width: 52, height: 52)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: KlymbSpacing.md) {
+                            ForEach(AvatarPreset.availablePresets) { preset in
+                                let isSelected = viewModel.selectedAvatarPreset == preset.id
+                                Button {
+                                    viewModel.selectedAvatarPreset = preset.id
+                                    HapticManager.selection()
+                                } label: {
+                                    VStack(spacing: 6) {
+                                        ZStack {
+                                            Circle()
+                                                .fill(isSelected ? Color.KlymbAccent.primaryMuted : Color.KlymbBackground.tertiary)
+                                                .frame(width: 48, height: 48)
 
-                                        Image(systemName: preset.iconName)
-                                            .font(.system(size: 24))
-                                            .foregroundStyle(
-                                                viewModel.selectedAvatarPreset == preset.id ?
-                                                ColorTokens.electricCyan : ColorTokens.textTertiary
-                                            )
-                                    }
-                                    .overlay(
-                                        Circle()
-                                            .strokeBorder(
-                                                viewModel.selectedAvatarPreset == preset.id ?
-                                                ColorTokens.electricCyan : Color.clear,
-                                                lineWidth: 2
-                                            )
-                                    )
-
-                                    Text(preset.displayName)
-                                        .font(.system(size: 10, weight: .medium))
-                                        .foregroundStyle(
-                                            viewModel.selectedAvatarPreset == preset.id ?
-                                            ColorTokens.textPrimary : ColorTokens.textTertiary
+                                            Image(systemName: preset.iconName)
+                                                .font(.system(size: 20, weight: .semibold))
+                                                .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
+                                        }
+                                        .overlay(
+                                            Circle()
+                                                .strokeBorder(
+                                                    isSelected ? Color.KlymbAccent.primary.opacity(0.75) : Color.clear,
+                                                    lineWidth: 1.5
+                                                )
                                         )
+
+                                        Text(preset.displayName)
+                                            .font(Font.Klymb.captionSmall)
+                                            .foregroundStyle(isSelected ? Color.KlymbText.primary : Color.KlymbText.tertiary)
+                                    }
                                 }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
+                        }
+                        .padding(.vertical, 2)
+                    }
+
+                    Divider().background(Color.KlymbBorder.subtle)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Display Name")
+                            .font(Font.Klymb.caption)
+                            .foregroundStyle(Color.KlymbText.secondary)
+
+                        TextField("Display Name", text: $viewModel.displayName)
+                            .font(Font.Klymb.body)
+                            .foregroundStyle(Color.KlymbText.primary)
+                            .padding(.horizontal, KlymbSpacing.md)
+                            .frame(minHeight: 46)
+                            .background(Color.KlymbBackground.tertiary)
+                            .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                    .strokeBorder(Color.KlymbBorder.default, lineWidth: 1)
+                            )
+                    }
+
+                    PrimaryButton(
+                        "Save Profile Details",
+                        icon: "checkmark",
+                        tone: .bone,
+                        isLoading: viewModel.isSavingProfile
+                    ) {
+                        Task {
+                            await viewModel.saveProfile()
                         }
                     }
-                    .padding(.vertical, 4)
                 }
-
-                Divider()
-                    .background(ColorTokens.borderSubtle)
-
-                // Display Name Editor
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Display Name")
-                        .font(TypographyTokens.caption2.weight(.semibold))
-                        .foregroundStyle(ColorTokens.textSecondary)
-
-                    TextField("Display Name", text: $viewModel.displayName)
-                        .font(TypographyTokens.body)
-                        .foregroundStyle(ColorTokens.textPrimary)
-                        .padding(LayoutTokens.paddingM)
-                        .background(ColorTokens.backgroundTertiary)
-                        .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                                .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-                        )
-                }
-
-                // Save Profile Button
-                Button {
-                    Task {
-                        await viewModel.saveProfile()
-                    }
-                } label: {
-                    HStack {
-                        if viewModel.isSavingProfile {
-                            ProgressView()
-                                .tint(Color.black)
-                        } else {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: 13, weight: .bold))
-                            Text("Save Profile Details")
-                                .font(TypographyTokens.subheadline.bold())
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(ColorTokens.electricCyan)
-                    .foregroundStyle(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isSavingProfile)
             }
-            .padding(LayoutTokens.paddingM)
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-            )
         }
     }
 }
@@ -262,98 +221,88 @@ private struct CitySelectionSection: View {
     @ObservedObject var viewModel: SettingsViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-            Text("LEAGUE & CITY")
-                .font(TypographyTokens.caption1.bold())
-                .foregroundStyle(ColorTokens.textTertiary)
+        VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+            KlymbSectionHeader("League & City")
 
-            VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-                // Cooldown Status Badge
-                HStack(spacing: 8) {
-                    Image(systemName: viewModel.cityCooldown.canChangeCity ? "checkmark.seal.fill" : "lock.fill")
-                        .font(.system(size: 14))
+            KlymbCard(padding: KlymbSpacing.lg) {
+                VStack(alignment: .leading, spacing: KlymbSpacing.md) {
+                    HStack(spacing: 8) {
+                        Image(systemName: viewModel.cityCooldown.canChangeCity ? "checkmark.seal.fill" : "lock.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(
+                                viewModel.cityCooldown.canChangeCity ? Color.KlymbSemantic.success : Color.KlymbSemantic.warning
+                            )
+
+                        Text(
+                            viewModel.cityCooldown.canChangeCity
+                                ? "City change eligible (30-day cooldown resets upon change)"
+                                : "Cooldown active: next change in \(viewModel.cityCooldown.cooldownDaysRemaining) days"
+                        )
+                        .font(Font.Klymb.caption)
                         .foregroundStyle(
-                            viewModel.cityCooldown.canChangeCity ? ColorTokens.neonGreen : ColorTokens.neonOrange
+                            viewModel.cityCooldown.canChangeCity ? Color.KlymbSemantic.success : Color.KlymbSemantic.warning
                         )
 
-                    Text(
-                        viewModel.cityCooldown.canChangeCity ?
-                        "City change eligible (30-day cooldown resets upon change)" :
-                        "Cooldown active: next change in \(viewModel.cityCooldown.cooldownDaysRemaining) days"
+                        Spacer()
+                    }
+                    .padding(KlymbSpacing.sm)
+                    .background(
+                        (viewModel.cityCooldown.canChangeCity ? Color.KlymbSemantic.success : Color.KlymbSemantic.warning)
+                            .opacity(0.08)
                     )
-                    .font(TypographyTokens.caption1.weight(.medium))
-                    .foregroundStyle(
-                        viewModel.cityCooldown.canChangeCity ? ColorTokens.neonGreen : ColorTokens.neonOrange
-                    )
+                    .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.sm, style: .continuous))
 
-                    Spacer()
-                }
-                .padding(LayoutTokens.paddingS)
-                .background(
-                    (viewModel.cityCooldown.canChangeCity ? ColorTokens.neonGreen : ColorTokens.neonOrange)
-                        .opacity(0.1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Current City Leaderboard")
+                            .font(Font.Klymb.caption)
+                            .foregroundStyle(Color.KlymbText.secondary)
 
-                // City Picker
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Current City Leaderboard")
-                        .font(TypographyTokens.caption2.weight(.semibold))
-                        .foregroundStyle(ColorTokens.textSecondary)
-
-                    Menu {
-                        ForEach(viewModel.cities) { city in
-                            Button {
-                                Task {
-                                    await viewModel.changeCity(newCityId: city.id)
-                                }
-                            } label: {
-                                HStack {
-                                    Text("\(city.name), \(city.country)")
-                                    if city.id == viewModel.selectedCityId {
-                                        Image(systemName: "checkmark")
+                        Menu {
+                            ForEach(viewModel.cities) { city in
+                                Button {
+                                    Task {
+                                        await viewModel.changeCity(newCityId: city.id)
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text("\(city.name), \(city.country)")
+                                        if city.id == viewModel.selectedCityId {
+                                            Image(systemName: "checkmark")
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: "mappin.circle.fill")
-                                .foregroundStyle(ColorTokens.electricCyan)
+                        } label: {
+                            HStack {
+                                Image(systemName: "mappin.circle.fill")
+                                    .foregroundStyle(Color.KlymbAccent.soft)
 
-                            Text(
-                                viewModel.cities.first(where: { $0.id == viewModel.selectedCityId })?.name ?? "Select City"
+                                Text(
+                                    viewModel.cities.first(where: { $0.id == viewModel.selectedCityId })?.name ?? "Select City"
+                                )
+                                .font(Font.Klymb.headline)
+                                .foregroundStyle(Color.KlymbText.primary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color.KlymbText.tertiary)
+                            }
+                            .padding(.horizontal, KlymbSpacing.md)
+                            .frame(minHeight: 46)
+                            .background(Color.KlymbBackground.tertiary)
+                            .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                    .strokeBorder(Color.KlymbBorder.default, lineWidth: 1)
                             )
-                            .font(TypographyTokens.body.bold())
-                            .foregroundStyle(ColorTokens.textPrimary)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.system(size: 12))
-                                .foregroundStyle(ColorTokens.textTertiary)
                         }
-                        .padding(LayoutTokens.paddingM)
-                        .background(ColorTokens.backgroundTertiary)
-                        .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                                .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-                        )
+                        .disabled(!viewModel.cityCooldown.canChangeCity || viewModel.isSavingCity)
+                        .opacity(viewModel.cityCooldown.canChangeCity ? 1.0 : 0.6)
                     }
-                    .disabled(!viewModel.cityCooldown.canChangeCity || viewModel.isSavingCity)
-                    .opacity(viewModel.cityCooldown.canChangeCity ? 1.0 : 0.6)
                 }
             }
-            .padding(LayoutTokens.paddingM)
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-            )
         }
     }
 }
@@ -363,120 +312,68 @@ private struct HabitsSelectionSection: View {
     @ObservedObject var viewModel: SettingsViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-            HStack {
-                Text("DAILY HABIT DISCIPLINES")
-                    .font(TypographyTokens.caption1.bold())
-                    .foregroundStyle(ColorTokens.textTertiary)
+        VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+            KlymbSectionHeader(
+                "Daily Disciplines",
+                trailingText: "\(viewModel.selectedHabitIds.count)/\(viewModel.habits.count) • MIN 3",
+                trailingColor: viewModel.selectedHabitIds.count >= 3 ? Color.KlymbAccent.soft : Color.KlymbSemantic.error
+            )
 
-                Spacer()
-
-                Text("Selected (\(viewModel.selectedHabitIds.count)/\(viewModel.habits.count)) • Min 3")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(
-                        viewModel.selectedHabitIds.count >= 3 ? ColorTokens.electricCyan : ColorTokens.neonRed
-                    )
-            }
-
-            VStack(spacing: 0) {
-                ForEach(viewModel.habits) { habit in
+            KlymbGroupedSurface {
+                ForEach(Array(viewModel.habits.enumerated()), id: \.element.id) { index, habit in
+                    if index > 0 {
+                        Divider()
+                            .background(Color.KlymbBorder.subtle)
+                            .padding(.leading, 52)
+                    }
                     Button {
                         viewModel.toggleHabit(id: habit.id)
                     } label: {
-                        HStack(spacing: LayoutTokens.spacingM) {
-                            Image(systemName: habitIcon(for: habit.key))
-                                .font(.system(size: 18))
-                                .foregroundStyle(ColorTokens.electricCyan)
-                                .frame(width: 28)
+                        let isSelected = viewModel.selectedHabitIds.contains(habit.id)
+                        HStack(spacing: KlymbSpacing.md) {
+                            Image(systemName: KlymbIconCatalog.habitIcon(for: habit.key))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(isSelected ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
+                                .frame(width: 24)
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(habit.displayName)
-                                    .font(TypographyTokens.subheadline.bold())
-                                    .foregroundStyle(ColorTokens.textPrimary)
+                                    .font(Font.Klymb.bodySmall.weight(.semibold))
+                                    .foregroundStyle(Color.KlymbText.primary)
 
                                 Text("Cap: \(habit.dailyKPCap) KP/\(habit.unit)")
-                                    .font(TypographyTokens.caption2)
-                                    .foregroundStyle(ColorTokens.textTertiary)
+                                    .font(Font.Klymb.captionSmall)
+                                    .foregroundStyle(Color.KlymbText.tertiary)
                             }
 
                             Spacer()
 
-                            ZStack {
-                                Circle()
-                                    .strokeBorder(
-                                        viewModel.selectedHabitIds.contains(habit.id) ?
-                                        ColorTokens.electricCyan : ColorTokens.borderSubtle,
-                                        lineWidth: 2
-                                    )
-                                    .frame(width: 24, height: 24)
-
-                                if viewModel.selectedHabitIds.contains(habit.id) {
-                                    Circle()
-                                        .fill(ColorTokens.electricCyan)
-                                        .frame(width: 14, height: 14)
-                                }
-                            }
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundStyle(isSelected ? Color.KlymbSemantic.success : Color.KlymbText.tertiary)
                         }
-                        .padding(LayoutTokens.paddingM)
+                        .padding(.horizontal, KlymbSpacing.lg)
+                        .padding(.vertical, 13)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-
-                    if habit.id != viewModel.habits.last?.id {
-                        Divider()
-                            .background(ColorTokens.borderSubtle)
-                            .padding(.leading, 56)
-                    }
                 }
 
-                // Save Habits Button
-                Button {
+                Divider().background(Color.KlymbBorder.subtle)
+
+                PrimaryButton(
+                    "Update Active Habits",
+                    icon: "checkmark",
+                    tone: .bone,
+                    isLoading: viewModel.isSavingHabits,
+                    isEnabled: viewModel.selectedHabitIds.count >= 3
+                ) {
                     Task {
                         await viewModel.saveHabits()
                     }
-                } label: {
-                    HStack {
-                        if viewModel.isSavingHabits {
-                            ProgressView()
-                                .tint(Color.black)
-                        } else {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 13, weight: .bold))
-                            Text("Update Active Habits")
-                                .font(TypographyTokens.subheadline.bold())
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(ColorTokens.electricCyan)
-                    .foregroundStyle(Color.black)
-                    .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
-                    .padding(LayoutTokens.paddingM)
                 }
-                .buttonStyle(.plain)
-                .disabled(viewModel.selectedHabitIds.count < 3 || viewModel.isSavingHabits)
-                .opacity(viewModel.selectedHabitIds.count >= 3 ? 1.0 : 0.5)
+                .padding(KlymbSpacing.md)
             }
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-            )
-        }
-    }
-
-    private func habitIcon(for key: String) -> String {
-        switch key {
-        case "steps": return "figure.walk"
-        case "running": return "figure.run"
-        case "walking_distance": return "figure.walk.motion"
-        case "workout": return "dumbbell.fill"
-        case "hydration": return "drop.fill"
-        case "sleep": return "bed.double.fill"
-        case "mindfulness": return "brain.head.profile"
-        default: return "sparkles"
         }
     }
 }
@@ -486,95 +383,84 @@ private struct PrivacySection: View {
     @ObservedObject var viewModel: SettingsViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: LayoutTokens.spacingM) {
-            Text("DATA & PRIVACY (GDPR)")
-                .font(TypographyTokens.caption1.bold())
-                .foregroundStyle(ColorTokens.textTertiary)
+        VStack(alignment: .leading, spacing: KlymbSpacing.sm) {
+            KlymbSectionHeader("Data & Privacy (GDPR)")
 
-            VStack(spacing: LayoutTokens.spacingM) {
-                // Export My Data Button
+            KlymbGroupedSurface {
                 Button {
                     Task {
                         await viewModel.exportData()
                     }
                 } label: {
-                    HStack(spacing: LayoutTokens.spacingM) {
-                        Image(systemName: "square.and.arrow.up.fill")
-                            .foregroundStyle(ColorTokens.electricCyan)
+                    HStack(spacing: KlymbSpacing.md) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.KlymbAccent.soft)
                             .frame(width: 24)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Export My Data")
-                                .font(TypographyTokens.subheadline.bold())
-                                .foregroundStyle(ColorTokens.textPrimary)
+                                .font(Font.Klymb.bodySmall.weight(.semibold))
+                                .foregroundStyle(Color.KlymbText.primary)
 
-                            Text("Download complete archive of activities, KP ledger, and profile in JSON")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
+                            Text("Download archive of activities, KP ledger, and profile in JSON")
+                                .font(Font.Klymb.captionSmall)
+                                .foregroundStyle(Color.KlymbText.secondary)
                         }
 
                         Spacer()
 
                         if viewModel.isExportingData {
                             ProgressView()
-                                .tint(ColorTokens.electricCyan)
+                                .tint(Color.KlymbAccent.primary)
                         } else {
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(ColorTokens.textTertiary)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Color.KlymbText.tertiary)
                         }
                     }
-                    .padding(LayoutTokens.paddingM)
-                    .background(ColorTokens.backgroundTertiary)
-                    .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
+                    .padding(.horizontal, KlymbSpacing.lg)
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(viewModel.isExportingData)
 
-                // Delete Account Button
+                Divider()
+                    .background(Color.KlymbBorder.subtle)
+                    .padding(.leading, 52)
+
                 Button {
                     viewModel.showDeleteAlert = true
                 } label: {
-                    HStack(spacing: LayoutTokens.spacingM) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(ColorTokens.neonRed)
+                    HStack(spacing: KlymbSpacing.md) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.KlymbSemantic.error)
                             .frame(width: 24)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Delete Account")
-                                .font(TypographyTokens.subheadline.bold())
-                                .foregroundStyle(ColorTokens.neonRed)
+                                .font(Font.Klymb.bodySmall.weight(.semibold))
+                                .foregroundStyle(Color.KlymbSemantic.error)
 
-                            Text("30-day grace period. Irrevocably purges all data after 30 days.")
-                                .font(TypographyTokens.caption2)
-                                .foregroundStyle(ColorTokens.textTertiary)
+                            Text("30-day grace period before irrevocable purge.")
+                                .font(Font.Klymb.captionSmall)
+                                .foregroundStyle(Color.KlymbText.secondary)
                         }
 
                         Spacer()
 
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(ColorTokens.neonRed.opacity(0.6))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color.KlymbSemantic.error.opacity(0.6))
                     }
-                    .padding(LayoutTokens.paddingM)
-                    .background(ColorTokens.neonRed.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                            .strokeBorder(ColorTokens.neonRed.opacity(0.25), lineWidth: 1)
-                    )
+                    .padding(.horizontal, KlymbSpacing.lg)
+                    .padding(.vertical, 14)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
-            .padding(LayoutTokens.paddingM)
-            .background(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .fill(ColorTokens.backgroundSecondary)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: LayoutTokens.radiusL)
-                    .strokeBorder(ColorTokens.borderSubtle, lineWidth: 1)
-            )
         }
     }
 }
@@ -582,24 +468,24 @@ private struct PrivacySection: View {
 // MARK: - 6. Legal & App Version Section
 private struct LegalSection: View {
     var body: some View {
-        VStack(spacing: LayoutTokens.spacingS) {
-            HStack(spacing: LayoutTokens.spacingL) {
+        VStack(spacing: KlymbSpacing.sm) {
+            HStack(spacing: KlymbSpacing.lg) {
                 Link("Privacy Policy", destination: URL(string: "https://klymb.app/privacy")!)
-                    .font(TypographyTokens.caption1)
-                    .foregroundStyle(ColorTokens.electricCyan)
+                    .font(Font.Klymb.caption)
+                    .foregroundStyle(Color.KlymbAccent.soft)
 
                 Text("•")
-                    .foregroundStyle(ColorTokens.textTertiary)
+                    .foregroundStyle(Color.KlymbText.tertiary)
 
                 Link("Terms of Service", destination: URL(string: "https://klymb.app/terms")!)
-                    .font(TypographyTokens.caption1)
-                    .foregroundStyle(ColorTokens.electricCyan)
+                    .font(Font.Klymb.caption)
+                    .foregroundStyle(Color.KlymbAccent.soft)
             }
-            .padding(.top, LayoutTokens.spacingS)
+            .padding(.top, KlymbSpacing.xs)
 
             Text("Klymb iOS • v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0") (Build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"))")
-                .font(TypographyTokens.caption2)
-                .foregroundStyle(ColorTokens.textTertiary)
+                .font(Font.Klymb.captionSmall)
+                .foregroundStyle(Color.KlymbText.tertiary)
         }
     }
 }
@@ -611,30 +497,29 @@ private struct FeedbackBanner: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: LayoutTokens.spacingM) {
+        let color = isSuccess ? Color.KlymbSemantic.success : Color.KlymbSemantic.error
+        HStack(spacing: KlymbSpacing.md) {
             Image(systemName: isSuccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                .foregroundStyle(isSuccess ? ColorTokens.neonGreen : ColorTokens.neonRed)
+                .foregroundStyle(color)
 
             Text(message)
-                .font(TypographyTokens.caption1.bold())
-                .foregroundStyle(ColorTokens.textPrimary)
+                .font(Font.Klymb.caption.weight(.semibold))
+                .foregroundStyle(Color.KlymbText.primary)
 
             Spacer()
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(ColorTokens.textTertiary)
+                    .foregroundStyle(Color.KlymbText.tertiary)
             }
         }
-        .padding(LayoutTokens.paddingM)
-        .background(
-            (isSuccess ? ColorTokens.neonGreen : ColorTokens.neonRed).opacity(0.12)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: LayoutTokens.radiusM))
+        .padding(KlymbSpacing.md)
+        .background(color.opacity(0.10))
+        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: LayoutTokens.radiusM)
-                .strokeBorder((isSuccess ? ColorTokens.neonGreen : ColorTokens.neonRed).opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                .strokeBorder(color.opacity(0.3), lineWidth: 1)
         )
     }
 }

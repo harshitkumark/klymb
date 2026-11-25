@@ -2,8 +2,8 @@
 //  WelcomeView.swift
 //  klymb
 //
-//  Welcome & Sign-in screen matching docs/DESIGN_SYSTEM.md §8.2 & §9.
-//  Clean Email + Password sign up / sign in alongside Sign in with Apple.
+//  Welcome & Sign-in screen with matte obsidian canvas, subtle topographic elevation lines,
+//  custom sliding mode control, Email + Password auth, and Sign in with Apple.
 //
 
 import SwiftUI
@@ -13,11 +13,18 @@ public struct WelcomeView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel: AuthViewModel
 
-    @State private var isSignUpMode: Bool = true
+    @State private var authMode: AuthMode = .signUp
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showPassword: Bool = false
     @FocusState private var focusedField: Field?
+
+    private enum AuthMode: String, CaseIterable, Identifiable, Hashable {
+        case signUp = "Create Account"
+        case signIn = "Sign In"
+
+        var id: String { rawValue }
+    }
 
     private enum Field {
         case email
@@ -32,6 +39,10 @@ public struct WelcomeView: View {
         self._viewModel = StateObject(wrappedValue: viewModel)
     }
 
+    private var isSignUpMode: Bool {
+        authMode == .signUp
+    }
+
     private var trimmedEmail: String {
         email.trimmingCharacters(in: .whitespacesAndNewlines)
     }
@@ -41,71 +52,74 @@ public struct WelcomeView: View {
     }
 
     public var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.KlymbBackground.primary
                 .ignoresSafeArea()
 
-            // Subtle top radial glow
-            Circle()
-                .fill(Color.KlymbAccent.primary.opacity(0.12))
-                .blur(radius: 80)
-                .frame(width: 300, height: 300)
-                .offset(y: -180)
-                .allowsHitTesting(false)
+            KlymbTopographicBackdrop(accentOpacity: 0.08)
+                .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: KlymbSpacing.lg) {
-                    // Hero Branding
-                    VStack(spacing: KlymbSpacing.sm) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.KlymbBackground.secondary)
-                                .frame(width: 78, height: 78)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.KlymbAccent.primary, lineWidth: 2)
-                                )
-                                .shadow(color: Color.KlymbAccent.primary.opacity(0.3), radius: 14)
+                VStack(alignment: .leading, spacing: KlymbSpacing.xl) {
+                    // Editorial Brand Header
+                    VStack(alignment: .leading, spacing: KlymbSpacing.lg) {
+                        HStack {
+                            HStack(spacing: KlymbSpacing.sm) {
+                                KlymbBrandMark(size: 24)
+                                Text("KLYMB")
+                                    .font(Font.Klymb.telemetry)
+                                    .tracking(3.5)
+                                    .foregroundStyle(Color.KlymbText.primary)
+                            }
 
-                            Image(systemName: "flame.fill")
-                                .font(.system(size: 36, weight: .bold))
-                                .foregroundStyle(KlymbGradient.fire)
-                                .accessibilityHidden(true)
+                            Spacer()
+
+                            Text("SEASON 01")
+                                .font(Font.Klymb.telemetry)
+                                .foregroundStyle(Color.KlymbText.secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.KlymbBackground.secondary)
+                                .clipShape(Capsule())
+                                .overlay(
+                                    Capsule()
+                                        .strokeBorder(Color.KlymbBorder.default, lineWidth: 1)
+                                )
                         }
 
-                        Text("KLYMB")
-                            .font(.system(size: 34, weight: .black, design: .rounded))
-                            .tracking(3)
-                            .foregroundStyle(Color.KlymbText.primary)
+                        VStack(alignment: .leading, spacing: KlymbSpacing.xs) {
+                            Text("Outclimb\nyour city.")
+                                .font(Font.Klymb.titleLarge)
+                                .foregroundStyle(Color.KlymbText.primary)
+                                .lineSpacing(-2)
 
-                        Text("Your city is watching.")
-                            .font(Font.Klymb.headline)
-                            .foregroundStyle(Color.KlymbAccent.primary)
-
-                        Text("Compete with your city. Earn KP. Climb the ranks.")
-                            .font(Font.Klymb.caption)
-                            .foregroundStyle(Color.KlymbText.secondary)
-                            .multilineTextAlignment(.center)
+                            Text("Your city is watching. Compete daily, earn KP, climb the ranks.")
+                                .font(Font.Klymb.bodySmall)
+                                .foregroundStyle(Color.KlymbText.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
-                    .padding(.top, KlymbSpacing.xl)
+                    .padding(.top, KlymbSpacing.lg)
 
-                    // Mode Switcher (Sign Up / Sign In)
-                    Picker("Authentication Mode", selection: $isSignUpMode) {
-                        Text("Create Account").tag(true)
-                        Text("Sign In").tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .accessibilityLabel("Authentication mode")
+                    // Mode Switcher (Custom sliding capsule)
+                    KlymbSegmentedControl(
+                        options: AuthMode.allCases,
+                        selection: $authMode,
+                        title: { $0.rawValue }
+                    )
 
                     // Email & Password Form
                     VStack(spacing: KlymbSpacing.md) {
+                        // Email Field
                         HStack(spacing: KlymbSpacing.sm) {
-                            Image(systemName: "envelope.fill")
-                                .foregroundStyle(Color.KlymbText.secondary)
+                            Image(systemName: "envelope")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(focusedField == .email ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
                                 .frame(width: 20)
                                 .accessibilityHidden(true)
 
                             TextField("Email address", text: $email)
+                                .font(Font.Klymb.body)
                                 .textInputAutocapitalization(.never)
                                 .keyboardType(.emailAddress)
                                 .textContentType(.emailAddress)
@@ -117,20 +131,22 @@ public struct WelcomeView: View {
                                 .accessibilityLabel("Email address")
                         }
                         .padding(.horizontal, KlymbSpacing.md)
-                        .frame(height: 50)
+                        .frame(minHeight: 50)
                         .background(Color.KlymbBackground.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md))
+                        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: KlymbRadius.md)
-                                .stroke(
-                                    focusedField == .email ? Color.KlymbAccent.primary : Color.KlymbBorder.default,
+                            RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                .strokeBorder(
+                                    focusedField == .email ? Color.KlymbAccent.primary.opacity(0.65) : Color.KlymbBorder.default,
                                     lineWidth: 1
                                 )
                         )
 
+                        // Password Field
                         HStack(spacing: KlymbSpacing.sm) {
-                            Image(systemName: "lock.fill")
-                                .foregroundStyle(Color.KlymbText.secondary)
+                            Image(systemName: "lock")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(focusedField == .password ? Color.KlymbAccent.soft : Color.KlymbText.secondary)
                                 .frame(width: 20)
                                 .accessibilityHidden(true)
 
@@ -141,6 +157,7 @@ public struct WelcomeView: View {
                                     SecureField("Password (min 6 characters)", text: $password)
                                 }
                             }
+                            .font(Font.Klymb.body)
                             .textInputAutocapitalization(.never)
                             .textContentType(isSignUpMode ? .newPassword : .password)
                             .autocorrectionDisabled()
@@ -150,20 +167,24 @@ public struct WelcomeView: View {
                             .onSubmit(submitEmail)
                             .accessibilityLabel("Password")
 
-                            Button(action: { showPassword.toggle() }) {
-                                Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                            Button {
+                                showPassword.toggle()
+                            } label: {
+                                Image(systemName: showPassword ? "eye.slash" : "eye")
+                                    .font(.system(size: 15, weight: .medium))
                                     .foregroundStyle(Color.KlymbText.secondary)
+                                    .frame(width: 32, height: 32)
                             }
                             .accessibilityLabel(showPassword ? "Hide password" : "Show password")
                         }
                         .padding(.horizontal, KlymbSpacing.md)
-                        .frame(height: 50)
+                        .frame(minHeight: 50)
                         .background(Color.KlymbBackground.secondary)
-                        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md))
+                        .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous))
                         .overlay(
-                            RoundedRectangle(cornerRadius: KlymbRadius.md)
-                                .stroke(
-                                    focusedField == .password ? Color.KlymbAccent.primary : Color.KlymbBorder.default,
+                            RoundedRectangle(cornerRadius: KlymbRadius.md, style: .continuous)
+                                .strokeBorder(
+                                    focusedField == .password ? Color.KlymbAccent.primary.opacity(0.65) : Color.KlymbBorder.default,
                                     lineWidth: 1
                                 )
                         )
@@ -177,24 +198,26 @@ public struct WelcomeView: View {
 
                         PrimaryButton(
                             isSignUpMode ? "Create Account" : "Sign In",
-                            icon: isSignUpMode ? "person.badge.plus" : "arrow.right",
+                            icon: isSignUpMode ? "arrow.right" : "arrow.right",
+                            tone: .bone,
                             isLoading: viewModel.isLoading,
                             isEnabled: canSubmitEmail
                         ) {
                             submitEmail()
                         }
+                        .padding(.top, KlymbSpacing.xs)
                     }
 
                     // Divider
-                    HStack(spacing: KlymbSpacing.sm) {
+                    HStack(spacing: KlymbSpacing.md) {
                         Rectangle()
-                            .fill(Color.KlymbBorder.default)
+                            .fill(Color.KlymbBorder.subtle)
                             .frame(height: 1)
-                        Text("OR")
-                            .font(Font.Klymb.captionSmall)
+                        Text("or")
+                            .font(Font.Klymb.caption)
                             .foregroundStyle(Color.KlymbText.tertiary)
                         Rectangle()
-                            .fill(Color.KlymbBorder.default)
+                            .fill(Color.KlymbBorder.subtle)
                             .frame(height: 1)
                     }
 
@@ -206,23 +229,26 @@ public struct WelcomeView: View {
                             viewModel.handleAppleCompletion(result, appState: appState)
                         }
                     )
-                    .signInWithAppleButtonStyle(.white)
+                    .signInWithAppleButtonStyle(.black)
                     .frame(height: 50)
-                    .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg))
-                    .shadow(color: Color.white.opacity(0.12), radius: 8)
+                    .clipShape(RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: KlymbRadius.lg, style: .continuous)
+                            .strokeBorder(KlymbGradient.specularBorder, lineWidth: 1)
+                    )
                     .disabled(viewModel.isLoading)
 
                     Text("By continuing, you agree to our Terms of Service and Privacy Policy.")
                         .font(Font.Klymb.captionSmall)
                         .foregroundStyle(Color.KlymbText.tertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .multilineTextAlignment(.center)
                         .padding(.bottom, KlymbSpacing.lg)
                 }
-                .padding(.horizontal, KlymbSpacing.xl)
+                .padding(.horizontal, KlymbSpacing.lg)
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .preferredColorScheme(.dark)
         .alert(
             (viewModel.errorMessage?.contains("Account created!") == true) ? "Check Your Email" : "Sign In Failed",
             isPresented: $viewModel.showError
@@ -248,4 +274,5 @@ public struct WelcomeView: View {
 #Preview {
     WelcomeView()
         .environmentObject(AppState())
+        .preferredColorScheme(.dark)
 }

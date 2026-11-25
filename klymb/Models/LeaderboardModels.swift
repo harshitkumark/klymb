@@ -53,16 +53,7 @@ public extension LeaderboardEntry {
     }
 
     var avatarIconName: String {
-        switch avatarPreset {
-        case "sprinter": return "flame.fill"
-        case "climber": return "figure.climbing"
-        case "cyclist": return "figure.outdoor.cycle"
-        case "zen": return "figure.mind.and.body"
-        case "star": return "star.fill"
-        case "bolt": return "bolt.fill"
-        case "shield": return "shield.fill"
-        default: return "figure.run"
-        }
+        KlymbIconCatalog.avatarIcon(for: avatarPreset)
     }
 
     var rankColor: Color {
@@ -70,7 +61,7 @@ public extension LeaderboardEntry {
         case 1: return Color.KlymbRank.gold
         case 2: return Color.KlymbRank.silver
         case 3: return Color.KlymbRank.bronze
-        case 4...10: return ColorTokens.electricCyan
+        case 4...10: return Color.KlymbRank.elite
         default: return ColorTokens.textTertiary
         }
     }

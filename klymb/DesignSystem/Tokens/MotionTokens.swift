@@ -2,8 +2,7 @@
 //  MotionTokens.swift
 //  klymb
 //
-//  Animation curves, durations, and accessibility Reduce Motion tokens
-//  matching docs/DESIGN_SYSTEM.md §10.
+//  Animation curves, durations, and accessibility Reduce Motion tokens.
 //  Follows AGENTS.md Rule 18.
 //
 
@@ -17,9 +16,9 @@ public enum MotionTokens {
     public static let durationRelaxed: Double = 0.6
 
     // MARK: - Standard Curves
-    public static let springBouncy = Animation.spring(response: 0.35, dampingFraction: 0.65)
-    public static let springStandard = Animation.spring(response: 0.35, dampingFraction: 0.8)
-    public static let springSnappy = Animation.spring(response: 0.22, dampingFraction: 0.85)
+    public static let springBouncy = Animation.spring(response: 0.35, dampingFraction: 0.68)
+    public static let springStandard = Animation.spring(response: 0.32, dampingFraction: 0.82)
+    public static let springSnappy = Animation.spring(response: 0.22, dampingFraction: 0.86)
     public static let easeOutSmooth = Animation.easeOut(duration: 0.4)
     public static let easeInOutStandard = Animation.easeInOut(duration: 0.3)
 
@@ -39,13 +38,7 @@ public extension View {
         _ animation: Animation = MotionTokens.springStandard,
         value: V
     ) -> some View {
-        self.transaction { transaction in
-            if UIAccessibility.isReduceMotionEnabled {
-                transaction.animation = nil
-            } else {
-                transaction.animation = animation
-            }
-        }
+        self.animation(UIAccessibility.isReduceMotionEnabled ? nil : animation, value: value)
     }
 
     /// Scale effect that automatically collapses to 1.0 if Reduce Motion is active

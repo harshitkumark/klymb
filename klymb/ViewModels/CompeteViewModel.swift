@@ -49,13 +49,13 @@ public final class CompeteViewModel: ObservableObject {
     public var overtakeNudgeText: String? {
         guard let my = myEntry else { return nil }
         if my.rank == 1 {
-            return "👑 You are leading the pack!"
+            return "Leading the pack"
         }
         // Find person right above me
         if let target = entries.first(where: { $0.rank == my.rank - 1 }) {
             let diff = max(1, target.totalKP - my.totalKP + 1)
             let targetName = target.displayName ?? "@\(target.username)"
-            return "⚡️ \(diff) KP to overtake #\(target.rank) \(targetName)"
+            return "\(diff) KP to pass #\(target.rank) \(targetName)"
         }
         return nil
     }

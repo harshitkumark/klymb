@@ -2,7 +2,7 @@
 //  StatTile.swift
 //  klymb
 //
-//  Compact statistical metric tile matching docs/DESIGN_SYSTEM.md §9.9.
+//  Minimalist bento metric tile with label-first hierarchy and condensed tabular values.
 //
 
 import SwiftUI
@@ -17,7 +17,7 @@ public struct StatTile: View {
         icon: String,
         value: String,
         label: String,
-        valueColor: Color = Color.KlymbAccent.primary
+        valueColor: Color = Color.KlymbText.primary
     ) {
         self.icon = icon
         self.value = value
@@ -27,23 +27,26 @@ public struct StatTile: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: KlymbSpacing.xs) {
-            Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(valueColor)
-                .accessibilityHidden(true)
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(valueColor)
+                    .accessibilityHidden(true)
 
-            Spacer(minLength: 4)
+                Text(label)
+                    .font(Font.Klymb.caption)
+                    .foregroundStyle(Color.KlymbText.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+
+            Spacer(minLength: 2)
 
             Text(value)
-                .font(Font.Klymb.titleSmall)
+                .font(Font.Klymb.athleticMetric)
                 .foregroundStyle(Color.KlymbText.primary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
-
-            Text(label)
-                .font(Font.Klymb.caption)
-                .foregroundStyle(Color.KlymbText.secondary)
-                .lineLimit(1)
+                .minimumScaleFactor(0.75)
         }
         .padding(KlymbSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -55,8 +58,8 @@ public struct StatTile: View {
 
 #Preview {
     HStack(spacing: 12) {
-        StatTile(icon: "figure.run", value: "42.5 km", label: "This Week")
-        StatTile(icon: "flame.fill", value: "1,420", label: "KP Earned", valueColor: Color.KlymbSemantic.warning)
+        StatTile(icon: "figure.run", value: "42.5 km", label: "This Week", valueColor: Color.KlymbAccent.soft)
+        StatTile(icon: "flame.fill", value: "1,420", label: "KP Earned", valueColor: Color.KlymbAccent.primary)
         StatTile(icon: "trophy.fill", value: "#14", label: "City Rank", valueColor: Color.KlymbRank.gold)
     }
     .padding()
