@@ -36,13 +36,13 @@ public struct HomeView: View {
                 .allowsHitTesting(false)
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: KlymbSpacing.lg) {
+                    VStack(spacing: KlymbSpacing.md) {
                         // 1. Unified Clean Top Header
                         HomeTopBar(viewModel: viewModel) {
                             appState.selectedTab = .profile
                         }
                         .padding(.horizontal, LayoutTokens.screenHorizontalPadding)
-                        .padding(.top, KlymbSpacing.sm)
+                        .padding(.top, KlymbSpacing.xs)
 
                         // 2. Open Telemetry KP Dial & Split Strip
                         HomeHeroCockpit(viewModel: viewModel) {
@@ -178,10 +178,10 @@ private struct HomeHeroCockpit: View {
     }
 
     var body: some View {
-        VStack(spacing: KlymbSpacing.md) {
+        VStack(spacing: KlymbSpacing.sm) {
             ProgressRing(
                 progress: viewModel.goalProgressRatio,
-                size: 196,
+                size: 184,
                 strokeWidth: 7,
                 openGauge: true,
                 showTicks: true

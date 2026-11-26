@@ -41,7 +41,6 @@ public struct KPCounterView: View {
                 .font(font)
                 .monospacedDigit()
                 .foregroundStyle(color)
-                .contentTransition(reduceMotion ? .identity : .numericText(value: Double(displayValue)))
         }
         .onAppear {
             animateValue(to: targetValue)
@@ -71,8 +70,8 @@ public struct KPCounterView: View {
         let diff = target - start
         guard diff != 0 else { return }
 
-        let steps = min(abs(diff), 20)
-        let stepIntervalNs = UInt64((0.55 / Double(steps)) * 1_000_000_000)
+        let steps = min(abs(diff), 18)
+        let stepIntervalNs = UInt64((0.42 / Double(steps)) * 1_000_000_000)
 
         animationTask = Task { @MainActor in
             for i in 1...steps {
@@ -80,9 +79,7 @@ public struct KPCounterView: View {
                 if Task.isCancelled { return }
                 let progress = Double(i) / Double(steps)
                 let eased = 1 - pow(1 - progress, 3)
-                withAnimation(.easeOut(duration: 0.08)) {
-                    self.displayValue = start + Int(Double(diff) * eased)
-                }
+                self.displayValue = start + Int(Double(diff) * eased)
             }
             if !Task.isCancelled {
                 self.displayValue = target

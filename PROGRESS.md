@@ -37,7 +37,8 @@
 | Live Supabase Integration | Done | `SupabaseClient`, `SupabaseServices`, `AppContainer.live` wired to all RPCs (`fbe69f1`) |
 | Email/Password & Apple Auth | Done | Sign-Up / Sign-In UI + `SupabaseErrorPayload` auth error mapping (`9f73b8f`) |
 | **Matte Charcoal & Terracotta UI Overhaul** | Done | Branch `feat/ui-redesign`: low-glare obsidian/grey palette (`#111113` / `#18181B`), Velvet Terracotta (`#D9683E`), Mint completion state (`#45C486`), top-lit specular cards, condensed athletic numerals, shared `KlymbPrimitives`, redesigned Auth, 6-step Onboarding, Home open radial gauge, Quick Log console, Compete stage & table, Challenges, Profile Athlete Pass, Friends, Settings, Notifications, and system banners |
-| Simulator Build Verification | Verified | `xcodebuild` Debug iPhone 17 Pro Simulator (`** BUILD SUCCEEDED **`); live `HomeView` verified in simulator |
+| Simulator Build Verification | Verified | `xcodebuild` Debug iPhone 17 Pro Simulator (`** BUILD SUCCEEDED **`) |
+| GitHub Feature Gallery | Done | 10 real simulator screenshots in `docs/screenshots/` + CEO-ready `README.md` |
 | Full Screen & Real iPhone Pass | Pending `[YOU]` | Visual tap-through of Log/Compete/Challenges/Profile/Settings + physical iPhone USB run & HealthKit test |
 
 ---
